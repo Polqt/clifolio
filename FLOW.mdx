@@ -1,0 +1,72 @@
+ssh-portfolio/
+│
+├── cmd/
+│   └── portfolio/
+│       └── main.go
+│
+├── internal/
+│   ├── ui/
+│   │   ├── app.go                 # root Bubble Tea model
+│   │   ├── intro.go               # typewriter + ascii screen
+│   │   ├── menu.go                # command palette / navigation
+│   │   ├── projects.go            # GitHub-connected project list
+│   │   ├── project_detail.go      # markdown render for individual repo
+│   │   ├── skills.go              # skills screen
+│   │   ├── experience.go          # experience & timeline screen
+│   │   ├── contact.go             # email, links, QR, etc.
+│   │   ├── theme_picker.go        # theme selector screen
+│   │   ├── components/
+│   │   │   ├── loader.go          # spinner, progress bar, etc.
+│   │   │   ├── list.go            # reusable list component
+│   │   │   ├── footer.go          # footer status bar
+│   │   │   ├── border.go          # lipgloss borders
+│   │   │   └── keymap.go          # key bindings struct
+│   │   └── state/
+│   │       ├── state.go           # enum of app states/screens
+│   │       └── navigation.go      # state transitions
+│
+│   ├── services/
+│   │   ├── github.go              # fetch repos, stars, languages
+│   │   ├── markdown.go            # glamour markdown renderer
+│   │   ├── ascii.go               # ascii portrait loader
+│   │   ├── theme_manager.go       # get/set active theme
+│   │   ├── sshserver.go           # SSH server wrapper (optional)
+│   │   └── easter.go              # matrix rain, hacker mode, chat easter eggs
+│
+│   ├── styles/
+│   │   ├── theme.go               # Theme struct (palette, spacing)
+│   │   ├── hacker.go              # hacker green theme
+│   │   ├── solarized.go           # solarized dark theme
+│   │   ├── mono.go                # monochrome theme
+│   │   ├── layout.go              # layout helpers (padding, sections)
+│   │   └── components/
+│   │       ├── title.go           # title styles
+│   │       ├── paragraph.go       # body text
+│   │       ├── list.go            # list item styling
+│   │       ├── box.go             # box styling
+│   │       └── keyhint.go         # hint/help text styling
+│
+│   └── config/
+│       ├── settings.go            # global settings
+│       └── env.go                 # load env variables (GitHub token, etc.)
+│
+├── assets/
+│   ├── ascii.txt                  # your ASCII self-portrait
+│   ├── intro.txt                  # typewriter intro message
+│   ├── qr.png                     # QR code for contact screen
+│   └── themes/                    # optional theme assets
+│
+├── scripts/
+│   ├── build.sh                   # build automation
+│   ├── deploy.sh                  # SSH deployment script
+│   └── run_local.sh
+│
+├── .github/
+│   └── workflows/
+│       └── build.yml              # CI/CD
+│
+├── .env.example
+├── go.mod
+├── go.sum
+└── README.md
+ 
