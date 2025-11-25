@@ -23,7 +23,7 @@ func AppModel() appModel {
 		screen: state.Intro,
 		intro: IntroModel(),
 		menu: MenuModel(),
-		projects: ProjectsModel(),
+		projects: ProjectsModel("Polqt"),
 	}
 }
 
