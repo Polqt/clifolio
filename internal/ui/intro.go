@@ -21,13 +21,20 @@ type introModel struct {
 }
 
 func IntroModel() introModel {
+	introData, err := ioutil.ReadFile("assets/intro.txt")
+	fullText := string(introData)
+	if err != nil {
+		fullText = `Welcome to my portfolio! Press any key to continue...`
+	}
+
 	data, err := ioutil.ReadFile("assets/ascii.txt")
 	var ascii []string
 	if err == nil {
 		ascii = append(ascii, string(data), "\n")
 	}
+	
 	return introModel {
-		fullText: "Hi! I'm Janpol Hidalgo,",
+		fullText: fullText,
 		ascii: ascii,
 	}
 }
@@ -85,7 +92,7 @@ func (m introModel) View() string {
 		}
 	}
 
-	if m.done && m.asciiIndex >= len(m.ascii) {
+	if m.done {
 		s += "\n\nPress any key to continue..."
 	}
 	

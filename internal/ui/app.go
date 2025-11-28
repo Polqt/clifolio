@@ -46,23 +46,27 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if newScreen, ok := msg.(state.Screen); ok {
-		m.screen = newScreen
-		return m, nil
-	}
-
-
 	switch m.screen {
-	
 	case state.Intro:
-		newIntro, cd := m.intro.Update(msg)
+		newIntro, cmd := m.intro.Update(msg)
 		m.intro = newIntro
-		return m, cd
+		return m, cmd
 	
 	case state.Menu:
 		newMenu, cmd := m.menu.Update(msg)
 		m.menu = newMenu
-		return m, cmd
+		if cmd != nil {
+			return m, cmd
+		}
+		switch msg := msg.(type) {
+		case state.Screen:
+			m.screen = msg
+			switch msg {
+			case state.Projects:
+				return m, m.projects.Init()
+			}
+		}
+		return m, nil
 
 	case state.Projects:
 		newProjects, cmd := m.projects.Update(msg)

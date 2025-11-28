@@ -32,7 +32,7 @@ func FetchRepos(ctx context.Context, username string) ([]Repo, error) {
 	opts := &github.RepositoryListOptions{
 		Type: "all",
 		ListOptions: github.ListOptions{
-			PerPage: 5,
+			PerPage: 20,
 		},
 	}
 
