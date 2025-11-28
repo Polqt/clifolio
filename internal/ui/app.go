@@ -13,9 +13,9 @@ type appModel struct {
 	intro tea.Model
 	menu tea.Model
 	projects tea.Model
-	// skills tea.Model
-	// experience tea.Model
-	// contact tea.Model
+	skills tea.Model
+	experience tea.Model
+	contact tea.Model
 }
 
 func AppModel() appModel {
@@ -24,6 +24,9 @@ func AppModel() appModel {
 		intro: IntroModel(),
 		menu: MenuModel(),
 		projects: ProjectsModel("Polqt"),
+		skills: SkillsModel(),
+		experience: ExperienceModel(),
+		contact: ContactModel(),
 	}
 }
 
@@ -72,6 +75,21 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newProjects, cmd := m.projects.Update(msg)
 		m.projects = newProjects
 		return m, cmd
+	
+	case state.Skills:
+		newSkills, cmd := m.skills.Update(msg)
+		m.skills = newSkills
+		return m, cmd
+
+	case state.Experience:
+		newExperience, cmd := m.experience.Update(msg)
+		m.experience = newExperience
+		return m, cmd
+
+	case state.Contact:
+		newContact, cmd := m.contact.Update(msg)
+		m.contact = newContact
+		return m, cmd
 	}
 
 	return m, nil
@@ -85,6 +103,12 @@ func (m appModel) View() string {
 		return m.menu.View()
 	case state.Projects:
 		return m.projects.View()
+	case state.Skills:
+		return m.skills.View()
+	case state.Experience:
+		return m.experience.View()
+	case state.Contact:
+		return m.contact.View()
 	default:
 		return ""
 	}

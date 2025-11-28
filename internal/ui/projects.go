@@ -212,11 +212,7 @@ func (m *projectsModel) View() string {
         if m.cursor == i {
             cursor = ">"
         }
-        desc := repo.Description
-        if desc == "" {
-            desc = "(no description)"
-        }
-        s += fmt.Sprintf(" %s %s (%d ★)\n    %s\n\n", cursor, repo.Name, repo.Stars, desc)
+        s += fmt.Sprintf(" %s %s (%d ★)\n\n", cursor, repo.Name, repo.Stars)
     }
 
     s += "\nControls: j/k up/down, pgup/pgdown, home/end, q to quit.\n"
