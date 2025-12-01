@@ -1,9 +1,3 @@
-PHASE 1 — Project Setup (Foundation)
-✅ 1. Initialize project structure
-
-Create folders (cmd/, internal/ui/, internal/services/, internal/styles/, assets/).
-
-Create go.mod and install Bubble Tea, Lipgloss, Bubbles, + extra libraries.
 
 ✅ 2. Set up cmd/portfolio/main.go
 
@@ -20,6 +14,7 @@ Run Bubble Tea with fullscreen mode.
 You have a runnable “blank” TUI that opens to an empty screen.
 
 PHASE 2 — Core UI System (Your App Skeleton)
+
 ✅ 3. Build the Root App Model
 
 Create application state enum (Intro, Menu, Projects, Skills, Experience, Contact).

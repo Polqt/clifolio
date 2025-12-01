@@ -1,1 +1,8 @@
-Hi, I'm Janpol Hidalgo,  
+Hi, I'm Janpol Hidalgo,
+Like most devs, it started with curiosity.
+One moment I was just clicking stuff,
+next thing I know I’m knee-deep in console logs and late-night
+"why isn't this working?!" breakdowns 😭.
+Still on the grind, always learning,
+and lowkey building my own multiverse of apps one bug at a time.
+Not perfect, but built diff.

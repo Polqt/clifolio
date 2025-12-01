@@ -2,6 +2,7 @@ package ui
 
 import (
 	"io/ioutil"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,9 +12,9 @@ type tickMsg struct{}
 type goToMenuMsg struct{}
 
 type introModel struct {
-	fullText   string
-	current    string
-	index 	   int
+	fullRunes  []rune
+	pos	       int
+	lines 	   []string
 	done 	   bool
 	ascii      []string
 	showASCII  bool
@@ -22,10 +23,14 @@ type introModel struct {
 
 func IntroModel() introModel {
 	introData, err := ioutil.ReadFile("assets/intro.txt")
-	fullText := string(introData)
-	if err != nil {
+	fullText := ""
+	if err == nil {
+		fullText = string(introData)
+	} else {
 		fullText = `Welcome to my portfolio! Press any key to continue...`
 	}
+
+	fullText = strings.ReplaceAll(fullText, "\r\n", "\n")
 
 	data, err := ioutil.ReadFile("assets/ascii.txt")
 	var ascii []string
@@ -34,7 +39,8 @@ func IntroModel() introModel {
 	}
 	
 	return introModel {
-		fullText: fullText,
+		fullRunes: []rune(fullText),
+		lines: []string{""},
 		ascii: ascii,
 	}
 }
@@ -50,24 +56,41 @@ func tick() tea.Cmd {
 }
 
 func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+	switch msg.(type) {
 
 	case tickMsg:
-		_ = msg
+		if m.pos < len(m.fullRunes) {
+			r := m.fullRunes[m.pos]
+			m.pos++
+
+			if r == '\n' {
+				m.lines = append(m.lines, "")
+			} else {
+				if len(m.lines) == 0 {
+					m.lines = append(m.lines, "")
+				}
+				last := m.lines[len(m.lines)-1]
+				last += string(r)
+				m.lines[len(m.lines)-1] = last
+			}
+			return m, tick()
+		}
+
 		if !m.done {
-			if m.index < len(m.fullText) {
-				m.current += string(m.fullText[m.index])
-				m.index++
+			m.done = true
+			if len(m.ascii) > 0 {
+				m.showASCII = true
 				return m, tick()
 			}
-			m.done = true
-			return m, tick()
-		} else if m.showASCII && m.asciiIndex < len(m.ascii) {
+			return m, nil
+		} 
+
+		if m.showASCII && m.asciiIndex < len(m.ascii) {
 			m.asciiIndex++
 			return m, tick()
 		}
+
 		return m, nil
-		
 
 	case tea.KeyMsg:
 		if m.done {
@@ -75,16 +98,19 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if m.done && !m.showASCII {
-		m.showASCII = true
-		return m, tick()
-	}
 
 	return m, nil
 }
 
 func (m introModel) View() string {
-	s := m.current + "\n\n"
+	s := ""
+
+	for i := 0; i < len(m.lines); i++ {
+		if i > 0 {
+			s += "\n"
+		} 
+		s += m.lines[i]
+	}
 
 	if m.showASCII {
 		for i := 0; i < m.asciiIndex && i < len(m.ascii); i++ {
@@ -93,7 +119,7 @@ func (m introModel) View() string {
 	}
 
 	if m.done {
-		s += "\n\nPress any key to continue..."
+		s += "\nPress any key to continue..."
 	}
 	
 	return s
