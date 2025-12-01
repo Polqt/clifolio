@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"clifolio/internal/styles"
 	"clifolio/internal/ui/state"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -16,6 +17,8 @@ type appModel struct {
 	skills tea.Model
 	experience tea.Model
 	contact tea.Model
+
+	theme styles.Theme
 }
 
 func AppModel() appModel {
@@ -27,6 +30,7 @@ func AppModel() appModel {
 		skills: SkillsModel(),
 		experience: ExperienceModel(),
 		contact: ContactModel(),
+		theme: styles.NewThemeFromName("dracula"),
 	}
 }
 
