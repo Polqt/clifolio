@@ -32,6 +32,12 @@ type projectsErrMsg struct {
 	err error
 }
 
+type openProjectMsg struct {
+	repo services.Repo
+	md   string
+	err  error
+}
+
 func ProjectsModel(username string) *projectsModel {
 	return &projectsModel{
 		username: username,
@@ -78,6 +84,18 @@ func fetchReposCmd(username string) tea.Cmd {
 
 func (m *projectsModel) Init() tea.Cmd {
 	return tea.Batch(m.spin.Init(), fetchReposCmd(m.username))
+}
+
+func fetchRepoReadmeCmd(owner string, r services.Repo) tea.Cmd {
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		md, err := services.FetchRepoReadme(ctx, owner, r.Name)
+		if err != nil {
+			return openProjectMsg{repo: r, md: "", err: err}
+		}
+		return openProjectMsg{repo: r, md: md, err: nil}
+	}
 }
 
 func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -131,7 +149,11 @@ func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.offset = m.cursor - m.pageSize + 1
 				}
 			}
-			case "pgdown":
+		case "enter":
+			if !m.loading && len(m.projects) > 0 {
+				repo := m.projects[m.cursor]
+				return m, fetchRepoReadmeCmd(m.username, repo)
+			}
 		if !m.loading {
 			m.offset += m.pageSize
 			if m.offset > len(m.projects) - 1 {

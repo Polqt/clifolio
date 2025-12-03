@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"clifolio/internal/ui/components"
 	"clifolio/internal/ui/state"
 	"fmt"
 
@@ -48,6 +49,8 @@ func (m *skillsModel) Init() tea.Cmd {
 }
 
 func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	km := components.DefaultKeymap()
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -63,18 +66,16 @@ func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.catIndex++
 				m.cursor = 0
 			}
-		case "up", "k":
+		case  km.Up, "up":
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case "down", "j":
+		case  km.Down, "down":
 			if m.cursor < len(m.categories[m.catIndex].Items)-1 {
 				m.cursor++
 			}
-		case "b", "esc":
-			return m, func() tea.Msg  {
-				return state.Menu
-			}
+		case km.Back, "esc":
+			return m, func() tea.Msg { return state.ScreenMenu }
 		}
 	}
 	return m, nil

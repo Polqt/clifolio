@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"clifolio/internal/ui/components"
+	"clifolio/internal/ui/state"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -36,19 +38,23 @@ func (m *experienceModel) Init() tea.Cmd {
 }
 
 func (m *experienceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	km := components.DefaultKeymap()
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "ctrl+c":
+		case km.Quit, "ctrl+c":
 			return m, tea.Quit
-		case "j", "down":
+		case km.Down, "down", "j":
 			if m.cursor < len(m.experiences)-1 {
 				m.cursor++
 			}
-		case "k", "up":
+		case km.Up, "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
 			}
+		case km.Back, "esc":
+			return m, func() tea.Msg { return state.ScreenMenu }
 		}
 	}
 	return m, nil

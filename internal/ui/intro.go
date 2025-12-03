@@ -1,11 +1,11 @@
 package ui
 
 import (
-	"io/ioutil"
 	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"clifolio/internal/services"
 )
 
 type tickMsg struct{}
@@ -22,17 +22,17 @@ type introModel struct {
 }
 
 func IntroModel() introModel {
-	introData, err := ioutil.ReadFile("assets/intro.txt")
+	introData, err := services.LoadASCII("assets/intro.txt")
 	fullText := ""
 	if err == nil {
 		fullText = string(introData)
 	} else {
-		fullText = `Welcome to my portfolio! Press any key to continue...`
+		fullText = `Press any key to continue...`
 	}
 
 	fullText = strings.ReplaceAll(fullText, "\r\n", "\n")
 
-	data, err := ioutil.ReadFile("assets/ascii.txt")
+	data, err := services.LoadASCII("assets/ascii.txt")
 	var ascii []string
 	if err == nil {
 		ascii = append(ascii, string(data), "\n")

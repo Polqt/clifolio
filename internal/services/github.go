@@ -58,3 +58,26 @@ func FetchRepos(ctx context.Context, username string) ([]Repo, error) {
 
 	return out, nil
 }
+
+func FetchRepoReadme(ctx context.Context, owner, repo string) (string, error) {
+	var client *github.Client
+	token := os.Getenv("GITHUB_TOKEN")
+	if token != "" {
+		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+		tc := oauth2.NewClient(ctx, ts)
+		client = github.NewClient(tc)
+	} else {
+		client = github.NewClient(nil)
+	}
+
+	rc, _, err := client.Repositories.GetReadme(ctx, owner, repo, nil)
+	if err != nil {
+		return "", err
+	}
+	content, err := rc.GetContent()
+	if err != nil {
+		return "", err
+	}
+
+	return content, nil
+}

@@ -27,7 +27,7 @@ func (m projectDetailsModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		out, err := services.GenerateMarkdown(m.rawMD)
 		if err != nil {
-			return fmt.Errorf("M")
+			return err
 		}
 		return out
 	}

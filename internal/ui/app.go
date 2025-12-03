@@ -1,36 +1,53 @@
 package ui
 
 import (
-	"clifolio/internal/styles"
+	"clifolio/internal/services"
 	"clifolio/internal/ui/state"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-
 type appModel struct {
 	screen state.Screen
+	
+	introModel tea.Model
+	menuModel  tea.Model		
 
-	intro tea.Model
-	menu tea.Model
-	projects tea.Model
-	skills tea.Model
+	intro      tea.Model
+	menu       tea.Model
+	projects   tea.Model
+	projectDetail tea.Model
+	skills     tea.Model
 	experience tea.Model
-	contact tea.Model
+	contact    tea.Model
 
-	theme styles.Theme
+	theme 	   string
+	menuOpen   bool
 }
+
+func AppWithTheme(themeName string) tea.Model {
+	m := &appModel{
+		screen: state.ScreenIntro,
+		theme: themeName,
+	}
+	m.menuModel = MenuModel()
+	m.introModel = nil
+	return m
+}
+
 
 func AppModel() appModel {
 	return appModel{
-		screen: state.Intro,
-		intro: IntroModel(),
-		menu: MenuModel(),
-		projects: ProjectsModel("Polqt"),
-		skills: SkillsModel(),
+		screen:     state.ScreenIntro,
+		intro:      IntroModel(),
+		menu:       MenuModel(),
+		projects:   ProjectsModel("Polqt"),
+		projectDetail: ProjectDetailsModel(services.Repo{}, ""),
+		skills:     SkillsModel(),
 		experience: ExperienceModel(),
-		contact: ContactModel(),
-		theme: styles.NewThemeFromName("dracula"),
+		contact:    ContactModel(),
+		theme: "default",
+		menuOpen: false,
 	}
 }
 
@@ -39,7 +56,7 @@ func (m appModel) Init() tea.Cmd {
 }
 
 func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	
+
 	// Global exit
 	if key, ok := msg.(tea.KeyMsg); ok {
 		if key.String() == "ctrl+c" || key.String() == "q" {
@@ -49,17 +66,27 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Handle intro -> menu
 	if _, ok := msg.(goToMenuMsg); ok {
-		m.screen = state.Menu
+		m.screen = state.ScreenMenu
+		if mm, ok := m.menu.(*menuModel); ok {
+			mm.open = true
+		}
+		return m, nil
+
+	}
+
+	if pm, ok := msg.(openProjectMsg); ok {
+		m.projectDetail = ProjectDetailsModel(pm.repo, pm.md)
+		m.screen = state.ScreenProjectDetail
 		return m, nil
 	}
 
 	switch m.screen {
-	case state.Intro:
+	case state.ScreenIntro:
 		newIntro, cmd := m.intro.Update(msg)
 		m.intro = newIntro
 		return m, cmd
-	
-	case state.Menu:
+
+	case state.ScreenMenu:
 		newMenu, cmd := m.menu.Update(msg)
 		m.menu = newMenu
 		if cmd != nil {
@@ -69,28 +96,33 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case state.Screen:
 			m.screen = msg
 			switch msg {
-			case state.Projects:
+			case state.ScreenProjects:
 				return m, m.projects.Init()
 			}
 		}
 		return m, nil
 
-	case state.Projects:
+	case state.ScreenProjects:
 		newProjects, cmd := m.projects.Update(msg)
 		m.projects = newProjects
 		return m, cmd
-	
-	case state.Skills:
+
+	case state.ScreenProjectDetail:
+		newProjectDetail, cmd := m.projectDetail.Update(msg)
+		m.projectDetail = newProjectDetail
+		return m, cmd
+
+	case state.ScreenSkills:
 		newSkills, cmd := m.skills.Update(msg)
 		m.skills = newSkills
 		return m, cmd
 
-	case state.Experience:
+	case state.ScreenExperience:
 		newExperience, cmd := m.experience.Update(msg)
 		m.experience = newExperience
 		return m, cmd
 
-	case state.Contact:
+	case state.ScreenContact:
 		newContact, cmd := m.contact.Update(msg)
 		m.contact = newContact
 		return m, cmd
@@ -101,17 +133,19 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m appModel) View() string {
 	switch m.screen {
-	case state.Intro:
+	case state.ScreenIntro:
 		return m.intro.View()
-	case state.Menu:
+	case state.ScreenMenu:
 		return m.menu.View()
-	case state.Projects:
+	case state.ScreenProjects:
 		return m.projects.View()
-	case state.Skills:
+	case state.ScreenProjectDetail:
+		return m.projectDetail.View()
+	case state.ScreenSkills:
 		return m.skills.View()
-	case state.Experience:
+	case state.ScreenExperience:
 		return m.experience.View()
-	case state.Contact:
+	case state.ScreenContact:
 		return m.contact.View()
 	default:
 		return ""

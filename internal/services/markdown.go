@@ -17,3 +17,17 @@ func GenerateMarkdown(md string) (string, error) {
 
 	return out, nil
 }
+
+func RenderMarkdown(md string) (string, error) {
+	r, _ := glamour.NewTermRenderer(
+		glamour.WithStandardStyle("dark"),
+		glamour.WithWordWrap(80),
+	)
+
+	out, err := r.Render(md)
+	if err != nil {
+		return "", err
+	}
+
+	return out, nil
+}
