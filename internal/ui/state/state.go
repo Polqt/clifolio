@@ -10,6 +10,8 @@ const (
 	ScreenSkills
 	ScreenExperience
 	ScreenContact
+	ScreenTheme
+	ScreenAbout
 )
 
 func (s Screen) String() string {
@@ -28,6 +30,10 @@ func (s Screen) String() string {
 		return "Experience"
 	case ScreenContact:
 		return "Contact"
+	case ScreenTheme:
+		return "Theme"
+	case ScreenAbout:
+		return "About"
 	default:
 		return "Unknown"
 	}

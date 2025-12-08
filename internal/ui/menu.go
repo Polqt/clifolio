@@ -20,6 +20,8 @@ func MenuModel() tea.Model {
 			state.ScreenSkills,
 			state.ScreenExperience,
 			state.ScreenContact,
+			state.ScreenTheme,
+			state.ScreenAbout,
 		},
 	}
 }

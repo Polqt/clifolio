@@ -10,6 +10,8 @@ import (
 
 type Repo struct {
 	Name        string
+	Description string
+	Language    string
 	HTMLURL     string
 	Stars       int
 }
@@ -51,6 +53,8 @@ func FetchRepos(ctx context.Context, username string) ([]Repo, error) {
 	for _, r := range all {
 		out = append(out, Repo{
 			Name: r.GetName(),
+			Description: r.GetDescription(),
+			Language: r.GetLanguage(),
 			HTMLURL: r.GetHTMLURL(),
 			Stars: r.GetStargazersCount(),
 		})

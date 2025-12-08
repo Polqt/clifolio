@@ -2,27 +2,30 @@ package ui
 
 import (
 	"clifolio/internal/services"
+	"clifolio/internal/styles"
 	"clifolio/internal/ui/state"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type appModel struct {
-	screen state.Screen
+	screen 			state.Screen
 	
-	introModel tea.Model
-	menuModel  tea.Model		
+	introModel 		tea.Model
+	menuModel  		tea.Model		
 
-	intro      tea.Model
-	menu       tea.Model
-	projects   tea.Model
-	projectDetail tea.Model
-	skills     tea.Model
-	experience tea.Model
-	contact    tea.Model
+	intro      		tea.Model
+	menu       		tea.Model
+	projects   		tea.Model
+	projectDetail 	tea.Model
+	skills     		tea.Model
+	experience 		tea.Model
+	contact    		tea.Model
+	themePicker 	tea.Model
+	// about 			tea.Model
 
-	theme 	   string
-	menuOpen   bool
+	theme 	   		string
+	menuOpen   		bool
 }
 
 func AppWithTheme(themeName string) tea.Model {
@@ -46,6 +49,8 @@ func AppModel() appModel {
 		skills:     SkillsModel(),
 		experience: ExperienceModel(),
 		contact:    ContactModel(),
+		themePicker: ThemePickerModel(),
+		// about: 		AboutModel(),
 		theme: "default",
 		menuOpen: false,
 	}
@@ -62,6 +67,14 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.String() == "ctrl+c" || key.String() == "q" {
 			return m, tea.Quit
 		}
+
+		if key.String() == "/" && m.screen != state.ScreenIntro {
+			m.screen = state.ScreenMenu
+			if mm, ok := m.menu.(*menuModel); ok {
+				mm.open = true
+			}
+			return m, nil
+		}
 	}
 
 	// Handle intro -> menu
@@ -74,10 +87,22 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	}
 
+	if _, ok := msg.(backToProjectsMsg); ok {
+		m.screen = state.ScreenProjects
+		return m, nil
+	}
+
+	if tc, ok := msg.(ThemeChangeMsg); ok {
+		m.theme = tc.ThemeName
+		_ = styles.NewThemeFromName(m.theme)
+		m.screen = state.ScreenMenu
+		return m, nil
+	}
+
 	if pm, ok := msg.(openProjectMsg); ok {
 		m.projectDetail = ProjectDetailsModel(pm.repo, pm.md)
 		m.screen = state.ScreenProjectDetail
-		return m, nil
+		return m, m.projectDetail.Init()
 	}
 
 	switch m.screen {
@@ -98,6 +123,8 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg {
 			case state.ScreenProjects:
 				return m, m.projects.Init()
+			case state.ScreenTheme:
+				return m, m.themePicker.Init()
 			}
 		}
 		return m, nil
@@ -105,6 +132,10 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case state.ScreenProjects:
 		newProjects, cmd := m.projects.Update(msg)
 		m.projects = newProjects
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
+			m.screen = state.ScreenMenu
+			return m, nil
+		}
 		return m, cmd
 
 	case state.ScreenProjectDetail:
@@ -115,16 +146,37 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case state.ScreenSkills:
 		newSkills, cmd := m.skills.Update(msg)
 		m.skills = newSkills
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
+			m.screen = state.ScreenMenu
+			return m, nil
+		}
 		return m, cmd
 
 	case state.ScreenExperience:
 		newExperience, cmd := m.experience.Update(msg)
 		m.experience = newExperience
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
+            m.screen = state.ScreenMenu
+            return m, nil
+        }
 		return m, cmd
 
 	case state.ScreenContact:
 		newContact, cmd := m.contact.Update(msg)
 		m.contact = newContact
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
+            m.screen = state.ScreenMenu
+            return m, nil
+        }
+		return m, cmd
+
+	case state.ScreenTheme:
+		newThemePicker, cmd := m.themePicker.Update(msg)
+		m.themePicker = newThemePicker
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
+			m.screen = state.ScreenMenu
+			return m, nil
+		}
 		return m, cmd
 	}
 
@@ -147,6 +199,8 @@ func (m appModel) View() string {
 		return m.experience.View()
 	case state.ScreenContact:
 		return m.contact.View()
+	case state.ScreenTheme:
+		return m.themePicker.View()
 	default:
 		return ""
 	}

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"clifolio/internal/services"
+	"clifolio/internal/ui/components"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,6 +15,8 @@ type projectDetailsModel struct {
 	loaded 		    bool
 	err				error
 }
+
+type backToProjectsMsg struct{}
 
 func ProjectDetailsModel(r services.Repo, md string) projectDetailsModel {
 	return projectDetailsModel{
@@ -34,6 +37,8 @@ func (m projectDetailsModel) Init() tea.Cmd {
 }
 
 func (m projectDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	km := components.DefaultKeymap()
+
 	switch msg := msg.(type) {
 	case string:
 		m.rendered = msg
@@ -41,8 +46,11 @@ func (m projectDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case error:
 		m.err = msg
 	case tea.KeyMsg:
-		if msg.String() == "b" || msg.String() == "esc" {
-			return m, func() tea.Msg { return nil }
+		switch msg.String() {
+		case km.Quit, "ctrl+c":
+			return m, tea.Quit
+		case km.Back, "esc":
+			return m, func() tea.Msg { return backToProjectsMsg{} }
 		}
 	}
 	return m, nil

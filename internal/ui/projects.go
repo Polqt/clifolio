@@ -7,6 +7,7 @@ import (
 
 	"clifolio/internal/services"
 	"clifolio/internal/ui/components"
+	"clifolio/internal/ui/state"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -99,6 +100,8 @@ func fetchRepoReadmeCmd(owner string, r services.Repo) tea.Cmd {
 }
 
 func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	km := components.DefaultKeymap()
+
 	var cmds []tea.Cmd
 
 	newSpin, spinCmd := m.spin.Update(msg)
@@ -133,8 +136,10 @@ func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case km.Quit, "ctrl+c":
 			return m, tea.Quit
+		case km.Back, "esc":
+			return m, func() tea.Msg { return state.ScreenMenu }
 		case "up", "k":
 			if !m.loading && m.cursor > 0 {
 				m.cursor--
@@ -234,7 +239,20 @@ func (m *projectsModel) View() string {
         if m.cursor == i {
             cursor = ">"
         }
-        s += fmt.Sprintf(" %s %s (%d ★)\n\n", cursor, repo.Name, repo.Stars)
+		lang := repo.Language
+		if lang == "" {
+			lang = "N/A"
+		}
+
+		desc := repo.Description
+		if desc == "" {
+			desc = "No description"
+		}
+		if len(desc) > 50 {
+			desc = desc[:47] + "..."
+		}
+        s += fmt.Sprintf(" %s %s [%s] (%d ★)\n\n", cursor, repo.Name, lang, desc, repo.Stars)
+		s += fmt.Sprintf("     %s\n\n", desc)
     }
 
     s += "\nControls: j/k up/down, pgup/pgdown, home/end, q to quit.\n"
