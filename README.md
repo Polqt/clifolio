@@ -81,8 +81,6 @@ Contact me
 
 Theme
 
-About
-
 ❗ Goal of Phase 4
 
 Your app is now navigable like a slick terminal app.

@@ -12,13 +12,14 @@ type tickMsg struct{}
 type goToMenuMsg struct{}
 
 type introModel struct {
-	fullRunes  []rune
-	pos	       int
-	lines 	   []string
-	done 	   bool
-	ascii      []string
-	showASCII  bool
-	asciiIndex int
+	fullRunes  		[]rune
+	pos	       		int
+	lines 	   		[]string
+	done 	   		bool
+	ascii      		[]string
+	showASCII  		bool
+	asciiIndex 		int
+	asciiOpacity 	float64
 }
 
 func IntroModel() introModel {
@@ -42,6 +43,7 @@ func IntroModel() introModel {
 		fullRunes: []rune(fullText),
 		lines: []string{""},
 		ascii: ascii,
+		asciiOpacity: 0.0,
 	}
 }
 
@@ -85,8 +87,11 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		} 
 
-		if m.showASCII && m.asciiIndex < len(m.ascii) {
-			m.asciiIndex++
+		if m.showASCII && m.asciiOpacity < 1.0 {
+			m.asciiOpacity += 0.1
+			if m.asciiOpacity > 1.0 {
+				m.asciiOpacity = 1.0
+			}
 			return m, tick()
 		}
 

@@ -82,7 +82,7 @@ func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *skillsModel) View() string {
-	s := "\n\nSkills\n\n"
+	s := "\n\n Skills\n\n"
 
 	for i, c := range m.categories {
 		if i == m.catIndex {

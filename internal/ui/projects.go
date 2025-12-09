@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"clifolio/internal/services"
+	"clifolio/internal/styles"
 	"clifolio/internal/ui/components"
 	"clifolio/internal/ui/state"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type projectsModel struct {
@@ -23,6 +25,9 @@ type projectsModel struct {
 
 	offset 		int
 	pageSize 	int
+
+	width 		int
+	height 		int
 }
 
 type projectsLoadedMsg struct {
@@ -110,8 +115,10 @@ func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 		h := msg.Height
-		desired := h - 8
+		desired := (h - 8) / 3
 		if desired < 3 {
 			desired = 3
 		}
@@ -197,22 +204,32 @@ func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// if m.loading {
-	// 	cmds = append(cmds, m.spin.Model.Tick)
-	// }
-
 	return m, tea.Batch(cmds...)
 }
 
-
 func (m *projectsModel) View() string {
-	if m.loading {
-		return fmt.Sprintf("\n\n %s Loading Github repos...", m.spin.View())
-	}
+	theme := styles.NewThemeFromName("default")
+	titleStyles := lipgloss.NewStyle().Foreground(theme.Primary).Bold(true).MarginBottom(1)
+	subtitleStyle := lipgloss.NewStyle().Foreground(theme.Secondary)
+	selectedCardStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(theme.Accent).Padding(0, 1).MarginBottom(1)
+	normalCardStyle := lipgloss.NewStyle().Border(lipgloss.HiddenBorder()).Padding(0, 1).MarginBottom(1)
+	errorStyle := lipgloss.NewStyle().Foreground(theme.Error)
+	helpStyle := lipgloss.NewStyle().Foreground(theme.Help).MarginTop(1)
+	starStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFD700"))
 
 	if m.err != nil {
-		return fmt.Sprintf("\n\n Error: %s", m.err)
+		return errorStyle.Render(fmt.Sprintf("\n\n Error: %s", m.err))
 	}
+
+	if m.loading {
+		loadingBox := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(theme.Primary).Padding(2, 4).Render(fmt.Sprintf("%s Laoding GitHub repos...", m.spin.View()))
+
+		if m.width > 0 && m.height > 0 {
+			return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, loadingBox)
+		}
+		return "\n\n" + loadingBox
+	}
+
 
 	if len(m.projects) == 0 {
 		return "\n\n No repositories found."
@@ -230,31 +247,46 @@ func (m *projectsModel) View() string {
 	totalPages := (len(m.projects) + m.pageSize - 1) / m.pageSize
     currentPage := (start / m.pageSize) + 1
 
-    s := fmt.Sprintf("\n\n Projects of %s (showing %d-%d of %d) — Page %d/%d\n\n",
-        m.username, start+1, end, len(m.projects), currentPage, totalPages)
+	s := titleStyles.Render(fmt.Sprintf("📁 Projects of %s", m.username)) + "\n"
+	s += subtitleStyle.Render(fmt.Sprintf("Showing %d-%d of %d • Page %d/%d",
+		start+1, end, len(m.projects), currentPage, totalPages)) + "\n\n"
 
     for i := start; i < end; i++ {
         repo := m.projects[i]
-        cursor := " "
-        if m.cursor == i {
-            cursor = ">"
-        }
+
 		lang := repo.Language
 		if lang == "" {
-			lang = "N/A"
+			lang = "Unknown"
 		}
+		langColor := styles.GetLanguageColor(lang)
+		langStyle := lipgloss.NewStyle().Foreground(langColor).Bold(true)
+		langIndicator := langStyle.Render("●") + " " + langStyle.Render(lang)
 
 		desc := repo.Description
 		if desc == "" {
-			desc = "No description"
+			desc = "No description provided"
 		}
+		
 		if len(desc) > 50 {
 			desc = desc[:47] + "..."
 		}
-        s += fmt.Sprintf(" %s %s [%s] (%d ★)\n\n", cursor, repo.Name, lang, desc, repo.Stars)
-		s += fmt.Sprintf("     %s\n\n", desc)
+		
+		stars := starStyle.Render(fmt.Sprintf("★ %d", repo.Stars))
+
+		cardContent := fmt.Sprintf("%ss %s\n%s",
+			titleStyles.Render(repo.Name),
+			stars,
+			subtitleStyle.Render(desc) + "\n" + langIndicator,
+		)
+
+		if m.cursor == i {
+			s += selectedCardStyle.Render("▸ " + cardContent) + "\n"
+		} else {
+			s += normalCardStyle.Render("  " + cardContent) + "\n"
+		}
     }
 
-    s += "\nControls: j/k up/down, pgup/pgdown, home/end, q to quit.\n"
+   	s  += helpStyle.Render("\n↑/↓: navigate • enter: select • q: quit")
+
     return s
 }

@@ -42,7 +42,23 @@ func (m *themePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case km.Back, "esc":
 			return m, func() tea.Msg { return state.ScreenMenu }
-		
+		case km.Down, "down":
+			if m.cursor < len(m.themes)-1 {
+				m.cursor++
+			} else {
+				m.cursor = 0
+			}
+		case km.Up, "up":
+			if m.cursor >0 {
+				m.cursor--
+			} else {
+				m.cursor = len(m.themes)-1
+			}
+		case km.Confirm:
+			if m.cursor >= 0 && m.cursor < len(m.themes) {
+				selectedTheme := m.themes[m.cursor]
+				return m, func() tea.Msg { return ThemeChangeMsg{ThemeName: selectedTheme} }
+			}
 		}
 	}
 	return m, nil
