@@ -1,6 +1,7 @@
 package main
 
 import (
+	"clifolio/internal/services"
 	"clifolio/internal/styles"
 	"clifolio/internal/ui"
 	"flag"
@@ -15,6 +16,7 @@ import (
 
 func main() {
 	themeName := flag.String("theme", "default", "theme name (hacker|dracula|default)")
+	sshMode := flag.Bool("ssh-mode", false, "run as SSH server instead of local TUI")
 	flag.Parse()
 
 	_ = styles.NewThemeFromName(*themeName)
@@ -24,9 +26,16 @@ func main() {
 		fmt.Println("Oh no! env file not found.")
 	}
 
-	p := tea.NewProgram(ui.AppModel(), tea.WithAltScreen())
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
+	if *sshMode {
+		fmt.Println("Starting SSH server mode...")
+		services.StartSSHServer(func() tea.Model {
+			return ui.AppModel()
+		})
+	} else {
+		p := tea.NewProgram(ui.AppModel(), tea.WithAltScreen())
+		if _, err := p.Run(); err != nil {
+			fmt.Printf("Alas, there's been an error: %v", err)
+			os.Exit(1)
+		}
 	}
 }

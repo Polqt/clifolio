@@ -2,7 +2,10 @@ module clifolio
 
 go 1.24.4
 
-require github.com/google/go-github/v79 v79.0.0
+require (
+	github.com/google/go-github/v79 v79.0.0
+	github.com/joho/godotenv v1.5.1
+)
 
 require (
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
@@ -15,7 +18,6 @@ require (
 	github.com/charmbracelet/x/windows v0.2.0 // indirect
 	github.com/creack/pty v1.1.21 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 )
@@ -24,12 +26,12 @@ require (
 	github.com/alecthomas/chroma/v2 v2.14.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/charmbracelet/bubbles v0.21.0 // indirect
-	github.com/charmbracelet/bubbletea v1.3.10 // indirect
+	github.com/charmbracelet/bubbles v0.21.0
+	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
-	github.com/charmbracelet/glamour v0.10.0 // indirect
+	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
-	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834 // indirect
+	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/charmbracelet/ssh v0.0.0-20250826160808-ebfa259c7309
 	github.com/charmbracelet/wish v1.4.7
 	github.com/charmbracelet/x/ansi v0.10.1 // indirect
