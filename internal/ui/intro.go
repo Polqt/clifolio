@@ -4,22 +4,24 @@ import (
 	"strings"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"clifolio/internal/services"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type tickMsg struct{}
 type goToMenuMsg struct{}
 
 type introModel struct {
-	fullRunes  		[]rune
-	pos	       		int
-	lines 	   		[]string
-	done 	   		bool
-	ascii      		[]string
-	showASCII  		bool
-	asciiIndex 		int
-	asciiOpacity 	float64
+	fullRunes    []rune
+	pos          int
+	lines        []string
+	done         bool
+	ascii        []string
+	showASCII    bool
+	asciiIndex   int
+	asciiOpacity float64
 }
 
 func IntroModel() introModel {
@@ -38,11 +40,11 @@ func IntroModel() introModel {
 	if err == nil {
 		ascii = append(ascii, string(data), "\n")
 	}
-	
-	return introModel {
-		fullRunes: []rune(fullText),
-		lines: []string{""},
-		ascii: ascii,
+
+	return introModel{
+		fullRunes:    []rune(fullText),
+		lines:        []string{""},
+		ascii:        ascii,
 		asciiOpacity: 0.0,
 	}
 }
@@ -85,7 +87,7 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tick()
 			}
 			return m, nil
-		} 
+		}
 
 		if m.showASCII && m.asciiOpacity < 1.0 {
 			m.asciiOpacity += 0.1
@@ -103,7 +105,6 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-
 	return m, nil
 }
 
@@ -113,7 +114,7 @@ func (m introModel) View() string {
 	for i := 0; i < len(m.lines); i++ {
 		if i > 0 {
 			s += "\n"
-		} 
+		}
 		s += m.lines[i]
 	}
 
@@ -124,8 +125,13 @@ func (m introModel) View() string {
 	}
 
 	if m.done {
-		s += "\nPress any key to continue..."
+		prompt := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FFD700")).
+			Bold(true).
+			Padding(1, 0).
+			Render("\nPress any key to continue...")
+		s += prompt
 	}
-	
+
 	return s
 }

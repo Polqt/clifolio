@@ -1,11 +1,12 @@
 package ui
 
 import (
+	"clifolio/internal/styles"
 	"clifolio/internal/ui/components"
 	"clifolio/internal/ui/state"
-	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type Category struct {
@@ -82,32 +83,113 @@ func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *skillsModel) View() string {
-	s := "\n\n Skills\n\n"
+	theme := styles.NewThemeFromName("default")
 
+	// Styles
+	titleStyle := lipgloss.NewStyle().
+		Foreground(theme.Primary).
+		Bold(true).
+		Align(lipgloss.Center).
+		MarginBottom(1)
+
+	subtitleStyle := lipgloss.NewStyle().
+		Foreground(theme.Secondary).
+		Align(lipgloss.Center).
+		Italic(true).
+		MarginBottom(2)
+
+	tabActiveStyle := lipgloss.NewStyle().
+		Foreground(theme.Accent).
+		Background(lipgloss.Color("#1a1a2e")).
+		Bold(true).
+		Padding(1, 3).
+		Margin(0, 1).
+		Border(lipgloss.NormalBorder()).
+		BorderForeground(theme.Accent)
+
+	tabInactiveStyle := lipgloss.NewStyle().
+		Foreground(theme.Secondary).
+		Padding(1, 3).
+		Margin(0, 1)
+
+	containerStyle := lipgloss.NewStyle().
+		Border(lipgloss.DoubleBorder()).
+		BorderForeground(theme.Primary).
+		Padding(3, 5).
+		Align(lipgloss.Center)
+
+	itemBoxStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(theme.Secondary).
+		Padding(2, 3).
+		Margin(1, 0).
+		Width(55)
+
+	selectedItemStyle := lipgloss.NewStyle().
+		Foreground(theme.Accent).
+		Bold(true)
+
+	normalItemStyle := lipgloss.NewStyle().
+		Foreground(theme.Secondary)
+
+	helpStyle := lipgloss.NewStyle().
+		Foreground(theme.Help).
+		Italic(true).
+		MarginTop(2).
+		Align(lipgloss.Center)
+
+	dividerStyle := lipgloss.NewStyle().
+		Foreground(theme.Primary).
+		Align(lipgloss.Center)
+
+	// Title
+	var output string
+	output += titleStyle.Render("🛠️  Skills & Technologies") + "\n"
+	output += subtitleStyle.Render("Technical expertise across the stack") + "\n"
+	output += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n\n"
+
+	// Category tabs
+	var tabs string
 	for i, c := range m.categories {
 		if i == m.catIndex {
-			s += fmt.Sprintf("[ %s ] ", c.Name)
+			tabs += tabActiveStyle.Render("[ " + c.Name + " ]")
 		} else {
-			s += fmt.Sprintf("  %s   ", c.Name)
+			tabs += tabInactiveStyle.Render(c.Name)
 		}
 	}
-	s += "\n\n"
+	output += lipgloss.NewStyle().Align(lipgloss.Center).Render(tabs) + "\n\n"
 
+	// Items
 	items := m.categories[m.catIndex].Items
 	if len(items) == 0 {
-		s += "(no items in this category)\n\n"
-		s += "Press b to go back\n"
-		return s
+		output += normalItemStyle.Render("(no items in this category)") + "\n"
+		output += helpStyle.Render("\nPress ESC to go back\n")
+		return containerStyle.Render(output)
 	}
 
+	// Item list with better formatting and columns
+	var itemsList string
 	for i, it := range items {
-		cursor := " "
+		var cursor string
+		var style lipgloss.Style
+
 		if i == m.cursor {
-			cursor = ">"
+			cursor = "▸  "
+			style = selectedItemStyle
+		} else {
+			cursor = "   "
+			style = normalItemStyle
 		}
-		s += fmt.Sprintf(" %s %s\n", cursor, it)
+
+		itemsList += cursor + style.Render("● "+it)
+		if i < len(items)-1 {
+			itemsList += "\n"
+		}
 	}
 
-	s += "\nUse ←/→ to switch category, j/k to navigate, b to go back, q to quit.\n"
-	return s
+	output += itemBoxStyle.Render(itemsList) + "\n"
+	output += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n"
+	output += helpStyle.Render("←/→ switch tabs • ↑/↓ navigate • ESC back • q quit")
+
+	return "\n" + containerStyle.Render(output)
 }
