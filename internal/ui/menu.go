@@ -25,7 +25,7 @@ func MenuModel() tea.Model {
 			state.ScreenExperience,
 			state.ScreenContact,
 			state.ScreenTheme,
-			state.ScreenAbout,
+			state.ScreenStats,
 		},
 	}
 }
@@ -115,8 +115,8 @@ func getScreenIcon(s state.Screen) string {
         return "📧"
     case state.ScreenTheme:
         return "🎨"
-    case state.ScreenAbout:
-        return "👤"
+    case state.ScreenStats:
+        return "📊"
     default:
         return "•"
     }

@@ -3,7 +3,7 @@ package state
 type Screen int 
 
 const (
-	ScreenIntro Screen = iota
+	ScreenIntro Screen = iota 
 	ScreenMenu
 	ScreenProjects
 	ScreenProjectDetail
@@ -11,7 +11,7 @@ const (
 	ScreenExperience
 	ScreenContact
 	ScreenTheme
-	ScreenAbout
+	ScreenStats
 )
 
 func (s Screen) String() string {
@@ -32,8 +32,8 @@ func (s Screen) String() string {
 		return "Contact"
 	case ScreenTheme:
 		return "Theme"
-	case ScreenAbout:
-		return "About"
+	case ScreenStats:
+		return "GitHub Stats"
 	default:
 		return "Unknown"
 	}

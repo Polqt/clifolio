@@ -22,7 +22,7 @@ type appModel struct {
 	experience 		tea.Model
 	contact    		tea.Model
 	themePicker 	tea.Model
-	// about 			tea.Model
+	stats			tea.Model
 
 	theme 	   		string
 	menuOpen   		bool
@@ -50,7 +50,7 @@ func AppModel() appModel {
 		experience: ExperienceModel(),
 		contact:    ContactModel(),
 		themePicker: ThemePickerModel(),
-		// about: 		AboutModel(),
+		stats: StatsModel("Polqt"),
 		theme: "default",
 		menuOpen: false,
 	}
@@ -175,6 +175,15 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.themePicker = newThemePicker
 		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
 			m.screen = state.ScreenMenu
+			return m, nil
+		}
+		return m, cmd
+
+	case state.ScreenStats:
+		newStats, cmd := m.stats.Update(msg)
+		m.stats = newStats
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenStats {
+			m.screen = state.ScreenStats
 			return m, nil
 		}
 		return m, cmd
