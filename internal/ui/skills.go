@@ -100,30 +100,22 @@ func (m *skillsModel) View() string {
 
 	tabActiveStyle := lipgloss.NewStyle().
 		Foreground(theme.Accent).
-		Background(lipgloss.Color("#1a1a2e")).
 		Bold(true).
-		Padding(1, 3).
-		Margin(0, 1).
-		Border(lipgloss.NormalBorder()).
-		BorderForeground(theme.Accent)
+		Underline(true).
+		Padding(0, 2)
 
 	tabInactiveStyle := lipgloss.NewStyle().
 		Foreground(theme.Secondary).
-		Padding(1, 3).
-		Margin(0, 1)
+		Padding(0, 2)
 
 	containerStyle := lipgloss.NewStyle().
-		Border(lipgloss.DoubleBorder()).
+		Border(lipgloss.RoundedBorder()).
 		BorderForeground(theme.Primary).
-		Padding(3, 5).
-		Align(lipgloss.Center)
+		Padding(2, 4)
 
 	itemBoxStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Secondary).
-		Padding(2, 3).
-		Margin(1, 0).
-		Width(55)
+		Padding(1, 2).
+		Margin(1, 0)
 
 	selectedItemStyle := lipgloss.NewStyle().
 		Foreground(theme.Accent).
@@ -132,64 +124,53 @@ func (m *skillsModel) View() string {
 	normalItemStyle := lipgloss.NewStyle().
 		Foreground(theme.Secondary)
 
+	cursorStyle := lipgloss.NewStyle().
+		Foreground(theme.Accent).
+		Bold(true)
+
 	helpStyle := lipgloss.NewStyle().
 		Foreground(theme.Help).
-		Italic(true).
-		MarginTop(2).
-		Align(lipgloss.Center)
+		MarginTop(2)
 
-	dividerStyle := lipgloss.NewStyle().
-		Foreground(theme.Primary).
-		Align(lipgloss.Center)
-
-	// Title
+	// Build output
 	var output string
 	output += titleStyle.Render("🛠️  Skills & Technologies") + "\n"
-	output += subtitleStyle.Render("Technical expertise across the stack") + "\n"
-	output += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n\n"
+	output += subtitleStyle.Render("Technical expertise across the stack") + "\n\n"
 
-	// Category tabs
+	// Category tabs - simpler, aligned
 	var tabs string
 	for i, c := range m.categories {
 		if i == m.catIndex {
-			tabs += tabActiveStyle.Render("[ " + c.Name + " ]")
+			tabs += tabActiveStyle.Render(c.Name)
 		} else {
 			tabs += tabInactiveStyle.Render(c.Name)
 		}
+		if i < len(m.categories)-1 {
+			tabs += "  "
+		}
 	}
-	output += lipgloss.NewStyle().Align(lipgloss.Center).Render(tabs) + "\n\n"
+	output += tabs + "\n\n"
 
 	// Items
 	items := m.categories[m.catIndex].Items
 	if len(items) == 0 {
 		output += normalItemStyle.Render("(no items in this category)") + "\n"
-		output += helpStyle.Render("\nPress ESC to go back\n")
+		output += helpStyle.Render("\nPress ESC to go back")
 		return containerStyle.Render(output)
 	}
 
-	// Item list with better formatting and columns
+	// Item list - clean and aligned
 	var itemsList string
 	for i, it := range items {
-		var cursor string
-		var style lipgloss.Style
-
 		if i == m.cursor {
-			cursor = "▸  "
-			style = selectedItemStyle
+			itemsList += cursorStyle.Render("▸ ") + selectedItemStyle.Render("• "+it) + "\n"
 		} else {
-			cursor = "   "
-			style = normalItemStyle
-		}
-
-		itemsList += cursor + style.Render("● "+it)
-		if i < len(items)-1 {
-			itemsList += "\n"
+			itemsList += "  " + normalItemStyle.Render("• "+it) + "\n"
 		}
 	}
 
-	output += itemBoxStyle.Render(itemsList) + "\n"
-	output += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n"
-	output += helpStyle.Render("←/→ switch tabs • ↑/↓ navigate • ESC back • q quit")
+	output += itemBoxStyle.Render(itemsList)
+	output += helpStyle.Render("\n←/→ switch tabs • ↑/↓ navigate • ESC back • q quit")
 
 	return "\n" + containerStyle.Render(output)
 }

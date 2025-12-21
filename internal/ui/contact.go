@@ -88,27 +88,19 @@ func (m *contactModel) View() string {
 		MarginBottom(2)
 
 	containerStyle := lipgloss.NewStyle().
-		Border(lipgloss.DoubleBorder()).
-		BorderForeground(theme.Primary).
-		Padding(3, 5).
-		Align(lipgloss.Center)
-
-	contactCardStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Secondary).
-		Padding(1, 3).
-		Margin(1, 0).
-		Width(50)
-
-	selectedCardStyle := lipgloss.NewStyle().
-		Border(lipgloss.ThickBorder()).
-		BorderForeground(theme.Accent).
-		Padding(1, 3).
-		Margin(1, 0).
-		Width(50)
+		BorderForeground(theme.Primary).
+		Padding(2, 4)
 
 	nameStyle := lipgloss.NewStyle().
 		Foreground(theme.Primary).
+		Bold(true)
+
+	normalContactStyle := lipgloss.NewStyle().
+		Foreground(theme.Secondary)
+
+	cursorStyle := lipgloss.NewStyle().
+		Foreground(theme.Accent).
 		Bold(true)
 
 	linkStyle := lipgloss.NewStyle().
@@ -117,13 +109,7 @@ func (m *contactModel) View() string {
 
 	helpStyle := lipgloss.NewStyle().
 		Foreground(theme.Help).
-		Italic(true).
-		MarginTop(2).
-		Align(lipgloss.Center)
-
-	dividerStyle := lipgloss.NewStyle().
-		Foreground(theme.Primary).
-		Align(lipgloss.Center)
+		MarginTop(1)
 
 	// Get contact icon
 	getIcon := func(name string) string {
@@ -144,25 +130,21 @@ func (m *contactModel) View() string {
 	// Build content
 	var content string
 	content += titleStyle.Render("📧 Get In Touch") + "\n"
-	content += subtitleStyle.Render("Let's connect and collaborate") + "\n"
-	content += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n\n"
+	content += subtitleStyle.Render("Let's connect and collaborate") + "\n\n"
 
-	// Contact items as cards
+	// Contact items - simple list
 	for i, contact := range m.contacts {
 		icon := getIcon(contact.Name)
-		var cardContent string
-
-		cardContent += nameStyle.Render(icon+"  "+contact.Name) + "\n"
-		cardContent += linkStyle.Render(contact.Link)
 
 		if i == m.cursor {
-			content += selectedCardStyle.Render("▸ "+cardContent) + "\n"
+			content += cursorStyle.Render("▸ ") + nameStyle.Render(icon+"  "+contact.Name) + "\n"
+			content += "  " + linkStyle.Render(contact.Link) + "\n\n"
 		} else {
-			content += contactCardStyle.Render("  "+cardContent) + "\n"
+			content += "  " + normalContactStyle.Render(icon+"  "+contact.Name) + "\n"
+			content += "  " + linkStyle.Render(contact.Link) + "\n\n"
 		}
 	}
 
-	content += "\n" + dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n"
 	content += helpStyle.Render("↑/↓ navigate • ESC back • q quit")
 
 	return "\n" + containerStyle.Render(content)

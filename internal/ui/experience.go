@@ -78,24 +78,19 @@ func (m *experienceModel) View() string {
 		MarginBottom(2)
 
 	containerStyle := lipgloss.NewStyle().
-		Border(lipgloss.DoubleBorder()).
+		Border(lipgloss.RoundedBorder()).
 		BorderForeground(theme.Primary).
-		Padding(3, 5).
-		Align(lipgloss.Center)
+		Padding(2, 4)
 
 	cardStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Secondary).
 		Padding(2, 3).
-		Margin(1, 0).
-		Width(75)
+		Margin(1, 0)
 
 	selectedCardStyle := lipgloss.NewStyle().
-		Border(lipgloss.ThickBorder()).
+		Border(lipgloss.RoundedBorder()).
 		BorderForeground(theme.Accent).
 		Padding(2, 3).
-		Margin(1, 0).
-		Width(75)
+		Margin(1, 0)
 
 	positionStyle := lipgloss.NewStyle().
 		Foreground(theme.Accent).
@@ -115,41 +110,37 @@ func (m *experienceModel) View() string {
 
 	helpStyle := lipgloss.NewStyle().
 		Foreground(theme.Help).
-		Italic(true).
-		MarginTop(2).
-		Align(lipgloss.Center)
+		MarginTop(1)
 
-	dividerStyle := lipgloss.NewStyle().
-		Foreground(theme.Primary).
-		Align(lipgloss.Center)
+	cursorStyle := lipgloss.NewStyle().
+		Foreground(theme.Accent).
+		Bold(true)
 
 	// Title
 	var output string
 	output += titleStyle.Render("💼 Professional Experience") + "\n"
-	output += subtitleStyle.Render("My journey in software development") + "\n"
-	output += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n\n"
+	output += subtitleStyle.Render("My journey in software development") + "\n\n"
 
 	// Experience cards
 	for i, exp := range m.experiences {
 		var card string
 
 		// Build card content
-		card += positionStyle.Render("● "+exp.Position) + "\n"
-		card += companyStyle.Render("   @ "+exp.Company) + "\n"
-		card += dateStyle.Render("   📅 "+exp.Date) + "\n\n"
-		card += descStyle.Render("   " + exp.Description)
+		card += positionStyle.Render(exp.Position) + "\n"
+		card += companyStyle.Render("@ "+exp.Company) + "\n"
+		card += dateStyle.Render("📅 "+exp.Date) + "\n\n"
+		card += descStyle.Render(exp.Description)
 
 		// Apply card style based on selection
 		if i == m.cursor {
-			output += selectedCardStyle.Render("▸ "+card) + "\n"
+			output += cursorStyle.Render("▸ ") + selectedCardStyle.Render(card) + "\n"
 		} else {
-			output += cardStyle.Render("  "+card) + "\n"
+			output += "  " + cardStyle.Render(card) + "\n"
 		}
 	}
 
 	// Help text
-	output += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n"
-	output += helpStyle.Render("↑/↓ navigate • ESC back • q quit")
+	output += helpStyle.Render("\n↑/↓ navigate • ESC back • q quit")
 
 	return "\n" + containerStyle.Render(output)
 }

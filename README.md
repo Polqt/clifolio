@@ -1,273 +1,207 @@
+# CLIFolio
 
-✅ 2. Set up cmd/portfolio/main.go
+A terminal-based portfolio accessible via SSH. Built with Go and Bubbletea.
 
-Add CLI flags (debug, theme).
+## Overview
 
-Load theme.
+clifolio is an interactive terminal user interface that serves as a personal portfolio. Users can SSH into your server and navigate through your projects, skills, experience, and contact information using keyboard controls.
 
-Initialize the root Bubble Tea app model.
+## Features
 
-Run Bubble Tea with fullscreen mode.
+- Interactive terminal UI with smooth navigation
+- GitHub integration for live project data
+- Real-time statistics dashboard
+- Multiple theme support (Hacker, Dracula, Solarized)
+- Matrix rain easter egg
+- SSH server for remote access
+- Markdown rendering for project READMEs
+- Responsive layout with clean design
 
-❗ Goal of Phase 1
+## Technology Stack
 
-You have a runnable “blank” TUI that opens to an empty screen.
+**Language:** Go 1.24.4
 
-PHASE 2 — Core UI System (Your App Skeleton)
+**Core Libraries:**
+- Bubbletea - Terminal UI framework
+- Lipgloss - Styling and layout
+- Bubbles - Reusable TUI components
+- Glamour - Markdown rendering
 
-✅ 3. Build the Root App Model
+**Integrations:**
+- GitHub API (go-github)
+- OAuth2 authentication
+- Wish - SSH server
 
-Create application state enum (Intro, Menu, Projects, Skills, Experience, Contact).
+## Installation
 
-Build AppModel which manages:
+Clone the repository:
 
-current screen
+```bash
+git clone https://github.com/yourusername/clifolio.git
+cd clifolio
+```
 
-theme
+Install dependencies:
 
-child models
+```bash
+go mod download
+```
 
-✅ 4. Create Screen Navigation System
+Create a `.env` file for GitHub integration:
 
-Each screen (Intro, Menu, Projects, Skills, etc.) is a separate Bubble Tea model.
+```bash
+GITHUB_TOKEN=your_github_personal_access_token
+```
 
-Root model handles switching between screens.
+Build the application:
 
-Pressing ESC returns to Menu.
+```bash
+go build -o clifolio .
+```
 
-❗ Goal of Phase 2
+## Usage
 
-You can switch between screens, even if they are empty.
+### Local Mode
 
-PHASE 3 — Intro Splash: Typewriter + ASCII Portrait
-✅ 5. Generate ASCII art
+Run the TUI locally in your terminal:
 
-Options:
+```bash
+./clifolio
+```
 
-Use an ASCII generator locally.
+With a specific theme:
 
-Or generate via asciify-go on runtime.
+```bash
+./clifolio --theme hacker
+```
 
-Save result in assets/ascii.txt.
+### SSH Mode
 
-✅ 6. Build Typewriter Effect
+Start the SSH server:
 
-Use Bubble Tea tickers.
+```bash
+./clifolio --ssh-mode
+```
 
-Reveal intro text letter by letter.
+Users can then connect via:
 
-Fade in ASCII portrait.
+```bash
+ssh username@your-server-address -p 23234
+```
 
-❗ Goal of Phase 3
 
-You have a cinematic intro that leads into the menu when ENTER is pressed.
+## Navigation Controls
 
-PHASE 4 — Command Palette (Your Navigation Hub)
-✅ 7. Build Command Palette inspired by VS Code
+- `↑/↓` or `j/k` - Navigate lists
+- `←/→` or `h/l` - Switch tabs
+- `Enter` - Select item
+- `/` - Open menu (from any screen)
+- `m` - Activate Matrix easter egg
+- `ESC` - Go back
+- `q` or `Ctrl+C` - Quit
 
-Use bubbles/list with custom styling.
+## Configuration
 
-On pressing / anywhere → open palette.
+Edit the following files to customize your portfolio:
 
-Palette shows:
+- `internal/ui/skills.go` - Update your skills and technologies
+- `internal/ui/experience.go` - Add your work experience
+- `internal/ui/contact.go` - Update contact information
+- `internal/ui/projects.go` - Change GitHub username
+- `internal/ui/stats.go` - Change GitHub username for stats
+- `assets/intro.txt` - Customize intro text
+- `assets/ascii.txt` - Add custom ASCII art
 
-Projects
+## Development
 
-Experience
+Run locally with auto-reload during development:
 
-Skills
+```bash
+go run main.go
+```
 
-Contact me
+Run tests:
 
-Theme
+```bash
+go test ./...
+```
 
-❗ Goal of Phase 4
+Format code:
 
-Your app is now navigable like a slick terminal app.
+```bash
+go fmt ./...
+```
 
-PHASE 5 — GitHub-Connected Projects
-✅ 8. Create GitHub service
+## Deployment
 
-Use go-github or HTTP.
+### VPS Deployment
 
-Fetch pinned repos or repos with specific topics.
+1. Build for your target platform:
 
-✅ 9. Build Projects Screen
+```bash
+GOOS=linux GOARCH=amd64 go build -o clifolio
+```
 
-Show:
+2. Transfer to your VPS:
 
-repo name
+```bash
+scp clifolio user@your-vps:/path/to/app/
+```
 
-description
+3. Set up as a systemd service:
 
-stars
+```ini
+[Unit]
+Description=CLIFolio SSH Portfolio
+After=network.target
 
-language
+[Service]
+Type=simple
+User=clifolio
+WorkingDirectory=/path/to/app
+ExecStart=/path/to/app/clifolio --ssh-mode
+Restart=always
 
-Use bubbles/list for scrolling.
+[Install]
+WantedBy=multi-user.target
+```
 
-Press ENTER → show repo details with markdown rendered via Glamour.
+4. Enable and start:
 
-❗ Goal of Phase 5
+```bash
+sudo systemctl enable clifolio
+sudo systemctl start clifolio
+```
 
-Your Projects section updates automatically from GitHub — huge flex.
+### Docker Deployment
 
-PHASE 6 — Skills, Experience, Contact Screens
-🛠 10. Build Skills Screen
+Build the Docker image:
 
-Use short lists + Lipgloss styling.
+```bash
+docker build -t clifolio .
+```
 
-Maybe add animation or icons.
+Run the container:
 
-🛠 11. Build Experience Screen
+```bash
+docker run -d -p 23234:23234 --name clifolio clifolio
+```
 
-Use go-pretty/table or a vertical timeline style.
+## Security Considerations
 
-Show job titles, education, certifications.
+When deploying the SSH server:
 
-🛠 12. Build Contact Screen
+- Use SSH key authentication
+- Disable password authentication
+- Run as non-root user
+- Configure firewall rules
+- Use `ForceCommand` in SSH config to prevent shell access
+- Implement rate limiting
 
-Display email, GitHub, LinkedIn.
+## License
 
-Add a QR code (optional).
+MIT
 
-Add “press c to copy email” to clipboard (if env allows).
+## Author
 
-❗ Goal of Phase 6
-
-Your content screens are visually consistent and clean.
-
-PHASE 7 — Themes + Visual Polish
-🎨 13. Build Theme Manager
-
-Themes you can add:
-
-Hacker Green
-
-Solarized Dark
-
-Monochrome Terminal
-
-Dracula-ish
-
-🔧 14. Add Theme Switcher
-
-Press t → cycle themes.
-
-OR choose theme inside the command palette.
-
-🎭 15. Add Global Styling System
-
-Define a component style system in internal/styles/:
-
-titles
-
-labels
-
-borders
-
-list items
-
-background layouts
-
-❗ Goal of Phase 7
-
-Your TUI looks premium and consistent across all screens.
-
-PHASE 8 — Interactive Easter Eggs (Optional But Cool)
-🔥 16. Add Matrix Rain Animation
-
-Use charmbracelet exp or implement your own.
-
-Trigger with hidden command like matrix.
-
-💻 17. Add Fake “Hacking Progress”
-
-When user types hack:
-
-Show a progress bar (bubbles/progress).
-
-Fake logs appear on screen.
-
-💬 18. Add Simple Chat About You
-
-Ask questions:
-
-“Who are you?”
-
-“What tech do you use?”
-
-“What’s your latest project?”
-
-Answers appear in typewriter style.
-
-❗ Goal of Phase 8
-
-Your portfolio becomes memorable and fun.
-
-PHASE 9 — SSH Deployment Setup
-🧷 19. Build a small SSH server in Go
-
-Users who SSH in activate the Bubble Tea TUI.
-
-Wrap your Bubble Tea program in an SSH session.
-
-🛠 20. Deploy on VPS
-
-Set up a Droplet / Fly.io instance.
-
-Configure SSH banner to trigger your TUI.
-
-🚦 21. Secure your SSH entry
-
-Disable shell access.
-
-ForceCommand your-program.
-
-Use separate user with restricted permissions.
-
-❗ Goal of Phase 9
-
-Anyone can run:
-
-ssh jepoy@ssh.yourdomain.com
-
-
-And boom — your portfolio opens. Biggest flex ever.
-
-PHASE 10 — Final Polish
-✨ 22. Test Across Terminals
-
-Windows
-
-macOS
-
-Linux
-
-Resize behavior
-
-📘 23. Add README with instructions
-
-How to SSH into your portfolio
-
-Screenshot previews
-
-Themes
-
-Features
-
-🧪 24. Add CI/CD
-
-GitHub workflow that builds binaries
-
-Deployment pipeline to your VPS
-
-🎁 25. Final UX pass
-
-Make animations smooth.
-
-Improve spacing.
-
-Remove flicker.
-
-Tighten copywriting.
+Janpol Hidalgo

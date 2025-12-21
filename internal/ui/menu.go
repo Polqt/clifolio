@@ -74,16 +74,14 @@ func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *menuModel) View() string {
 	theme := styles.NewThemeFromName("default")
 
-	// Enhanced styling
+	// Charm-style clean styling
 	titleStyle := lipgloss.NewStyle().
 		Foreground(theme.Primary).
 		Bold(true).
-		Align(lipgloss.Center).
 		MarginBottom(1)
 
 	subtitleStyle := lipgloss.NewStyle().
 		Foreground(theme.Secondary).
-		Align(lipgloss.Center).
 		Italic(true).
 		MarginBottom(2)
 
@@ -100,45 +98,34 @@ func (m *menuModel) View() string {
 
 	helpStyle := lipgloss.NewStyle().
 		Foreground(theme.Help).
-		Italic(true).
-		MarginTop(2).
-		Align(lipgloss.Center)
+		MarginTop(2)
 
 	boxStyle := lipgloss.NewStyle().
-		Border(lipgloss.DoubleBorder()).
+		Border(lipgloss.RoundedBorder()).
 		BorderForeground(theme.Primary).
-		Padding(3, 6).
-		Align(lipgloss.Center)
-
-	dividerStyle := lipgloss.NewStyle().
-		Foreground(theme.Primary).
-		Align(lipgloss.Center)
+		Padding(2, 4)
 
 	var content string
 
-	// Title with better formatting
+	// Title
 	content += titleStyle.Render("Portfolio Navigator") + "\n"
-	content += subtitleStyle.Render("What would you like to explore?") + "\n"
-	content += dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n\n"
+	content += subtitleStyle.Render("What would you like to explore?") + "\n\n"
 
-	// Menu items with better spacing
+	// Menu items - clean and aligned
 	for i, it := range m.items {
 		icon := getScreenIcon(it)
+		itemText := icon + "  " + it.String()
 
 		if i == m.idx {
-			cursor := cursorStyle.Render("  ▸  ")
-			content += cursor + selectedStyle.Render(icon+"  "+it.String()) + "\n"
+			cursor := cursorStyle.Render("▸ ")
+			content += cursor + selectedStyle.Render(itemText) + "\n"
 		} else {
-			content += "     " + normalStyle.Render(icon+"  "+it.String()) + "\n"
-		}
-		if i < len(m.items)-1 {
-			content += "\n"
+			content += "  " + normalStyle.Render(itemText) + "\n"
 		}
 	}
 
 	// Help text
-	content += "\n" + dividerStyle.Render("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") + "\n"
-	content += helpStyle.Render("↑/↓ navigate • enter select • m matrix • q quit")
+	content += helpStyle.Render("\n↑/↓ navigate • enter select • m matrix • q quit")
 
 	box := boxStyle.Render(content)
 
