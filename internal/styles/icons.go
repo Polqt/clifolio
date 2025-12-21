@@ -1,7 +1,7 @@
 package styles
 
 import "clifolio/internal/ui/state"
-
+//mankykykyto
 func getScreenIcon(s state.Screen) string {
 	switch s {
 	case state.ScreenProjects:
@@ -20,3 +20,5 @@ func getScreenIcon(s state.Screen) string {
 		return "•"
 	}
 }
+
+//Mankyfootwounds
