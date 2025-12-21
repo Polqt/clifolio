@@ -14,11 +14,7 @@ func getScreenIcon(s state.Screen) string {
 		return "📧"
 	case state.ScreenTheme:
 		return "🎨"
-	case state.ScreenAbout:
-		return "👤"
 	default:
 		return "•"
 	}
 }
-
-//Mankyfootwounds

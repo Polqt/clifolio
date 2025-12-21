@@ -12,6 +12,7 @@ const (
 	ScreenContact
 	ScreenTheme
 	ScreenStats
+	ScreenMatrix
 )
 
 func (s Screen) String() string {

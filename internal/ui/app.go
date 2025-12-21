@@ -23,6 +23,7 @@ type appModel struct {
 	contact    		tea.Model
 	themePicker 	tea.Model
 	stats			tea.Model
+	matrix			tea.Model
 
 	theme 	   		string
 	menuOpen   		bool
@@ -51,6 +52,7 @@ func AppModel() appModel {
 		contact:    ContactModel(),
 		themePicker: ThemePickerModel(),
 		stats: StatsModel("Polqt"),
+		matrix: MatrixModel(),
 		theme: "default",
 		menuOpen: false,
 	}
@@ -103,6 +105,13 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.projectDetail = ProjectDetailsModel(pm.repo, pm.md)
 		m.screen = state.ScreenProjectDetail
 		return m, m.projectDetail.Init()
+	}
+
+	if key, ok := msg.(tea.KeyMsg); ok {
+		if key.String() == "m" && m.screen == state.ScreenMenu {
+			m.screen = state.ScreenMatrix
+			return m, m.matrix.Init()
+		}
 	}
 
 	switch m.screen {
