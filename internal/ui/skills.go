@@ -37,7 +37,7 @@ func SkillsModel() *skillsModel {
 			{
 				Name:  "Other",
 				Items: []string{"REST", "GraphQL", "gRPC", "Microservices", "CI/CD", "TDD", "Agile"},
-			},		
+			},
 		},
 		catIndex: 0,
 		cursor:   0,
@@ -66,11 +66,11 @@ func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.catIndex++
 				m.cursor = 0
 			}
-		case  km.Up, "up":
+		case km.Up, "up":
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case  km.Down, "down":
+		case km.Down, "down":
 			if m.cursor < len(m.categories[m.catIndex].Items)-1 {
 				m.cursor++
 			}
@@ -95,7 +95,7 @@ func (m *skillsModel) View() string {
 
 	items := m.categories[m.catIndex].Items
 	if len(items) == 0 {
-		s += "(no titems in this category)\n\n"
+		s += "(no items in this category)\n\n"
 		s += "Press b to go back\n"
 		return s
 	}

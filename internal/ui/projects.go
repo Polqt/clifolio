@@ -15,19 +15,19 @@ import (
 )
 
 type projectsModel struct {
-	username 	string
-	projects 	[]services.Repo
-	cursor  	int
-	loading 	bool
-	err 		error
+	username string
+	projects []services.Repo
+	cursor   int
+	loading  bool
+	err      error
 
 	spin components.SpinnerComponent
 
-	offset 		int
-	pageSize 	int
+	offset   int
+	pageSize int
 
-	width 		int
-	height 		int
+	width  int
+	height int
 }
 
 type projectsLoadedMsg struct {
@@ -47,10 +47,10 @@ type openProjectMsg struct {
 func ProjectsModel(username string) *projectsModel {
 	return &projectsModel{
 		username: username,
-		loading: true,
-		spin:  components.NewSpinner(),
-		cursor: 0,
-		offset: 0,
+		loading:  true,
+		spin:     components.NewSpinner(),
+		cursor:   0,
+		offset:   0,
 		pageSize: 10,
 	}
 }
@@ -73,14 +73,13 @@ func (m *projectsModel) ensureCursorInWindow() {
 	}
 }
 
-
 func fetchReposCmd(username string) tea.Cmd {
 	return func() tea.Msg {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		repos, err := services.FetchRepos(ctx, username)
 		if err != nil {
-			fmt.Println("Fetch error:", err) 
+			fmt.Println("Fetch error:", err)
 			return projectsErrMsg{err}
 		}
 		fmt.Println("Fetched repos:", len(repos))
@@ -129,7 +128,7 @@ func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.projects = msg.projects
 		m.loading = false
 		if m.cursor >= len(m.projects) {
-			m.cursor = 0 
+			m.cursor = 0
 		}
 		if m.offset > len(m.projects) {
 			m.offset = 0
@@ -166,23 +165,23 @@ func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				repo := m.projects[m.cursor]
 				return m, fetchRepoReadmeCmd(m.username, repo)
 			}
-		if !m.loading {
-			m.offset += m.pageSize
-			if m.offset > len(m.projects) - 1 {
-				m.offset = max(0, len(m.projects)-m.pageSize)
+			if !m.loading {
+				m.offset += m.pageSize
+				if m.offset > len(m.projects)-1 {
+					m.offset = max(0, len(m.projects)-m.pageSize)
+				}
+				if m.cursor < m.offset {
+					m.cursor = m.offset
+				} else if m.cursor >= m.offset+m.pageSize {
+					m.cursor = min(len(m.projects)-1, m.offset+m.pageSize-1)
+				}
 			}
-			if m.cursor < m.offset {
-				m.cursor = m.offset
-			} else if m.cursor >= m.offset+m.pageSize {
-				m.cursor = min(len(m.projects)-1, m.offset+m.pageSize-1)
-			}
-		}
 		case "pgup":
 			if !m.loading {
 				m.offset -= m.pageSize
 				if m.offset < 0 {
 					m.offset = 0
-				} 
+				}
 				if m.cursor < m.offset {
 					m.cursor = m.offset
 				}
@@ -199,7 +198,7 @@ func (m *projectsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.offset = 0
 				}
-				m.cursor = len(m.projects)-1
+				m.cursor = len(m.projects) - 1
 			}
 		}
 	}
@@ -222,7 +221,7 @@ func (m *projectsModel) View() string {
 	}
 
 	if m.loading {
-		loadingBox := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(theme.Primary).Padding(2, 4).Render(fmt.Sprintf("%s Laoding GitHub repos...", m.spin.View()))
+		loadingBox := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(theme.Primary).Padding(2, 4).Render(fmt.Sprintf("%s Loading GitHub repos...", m.spin.View()))
 
 		if m.width > 0 && m.height > 0 {
 			return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, loadingBox)
@@ -230,29 +229,28 @@ func (m *projectsModel) View() string {
 		return "\n\n" + loadingBox
 	}
 
-
 	if len(m.projects) == 0 {
 		return "\n\n No repositories found."
 	}
 
-   start := m.offset
-    if start < 0 {
-        start = 0
-    }
-    end := start + m.pageSize
-    if end > len(m.projects) {
-        end = len(m.projects)
-    }
+	start := m.offset
+	if start < 0 {
+		start = 0
+	}
+	end := start + m.pageSize
+	if end > len(m.projects) {
+		end = len(m.projects)
+	}
 
 	totalPages := (len(m.projects) + m.pageSize - 1) / m.pageSize
-    currentPage := (start / m.pageSize) + 1
+	currentPage := (start / m.pageSize) + 1
 
 	s := titleStyles.Render(fmt.Sprintf("📁 Projects of %s", m.username)) + "\n"
 	s += subtitleStyle.Render(fmt.Sprintf("Showing %d-%d of %d • Page %d/%d",
 		start+1, end, len(m.projects), currentPage, totalPages)) + "\n\n"
 
-    for i := start; i < end; i++ {
-        repo := m.projects[i]
+	for i := start; i < end; i++ {
+		repo := m.projects[i]
 
 		lang := repo.Language
 		if lang == "" {
@@ -266,27 +264,27 @@ func (m *projectsModel) View() string {
 		if desc == "" {
 			desc = "No description provided"
 		}
-		
+
 		if len(desc) > 50 {
 			desc = desc[:47] + "..."
 		}
-		
+
 		stars := starStyle.Render(fmt.Sprintf("★ %d", repo.Stars))
 
-		cardContent := fmt.Sprintf("%ss %s\n%s",
+		cardContent := fmt.Sprintf("%s %s\n%s",
 			titleStyles.Render(repo.Name),
 			stars,
-			subtitleStyle.Render(desc) + "\n" + langIndicator,
+			subtitleStyle.Render(desc)+"\n"+langIndicator,
 		)
 
 		if m.cursor == i {
-			s += selectedCardStyle.Render("▸ " + cardContent) + "\n"
+			s += selectedCardStyle.Render("▸ "+cardContent) + "\n"
 		} else {
-			s += normalCardStyle.Render("  " + cardContent) + "\n"
+			s += normalCardStyle.Render("  "+cardContent) + "\n"
 		}
-    }
+	}
 
-   	s  += helpStyle.Render("\n↑/↓: navigate • enter: select • q: quit")
+	s += helpStyle.Render("\n↑/↓: navigate • enter: select • q: quit")
 
-    return s
+	return s
 }

@@ -14,13 +14,13 @@ import (
 )
 
 type statsModel struct {
-	stats 		*services.GitHubStats
-	loading 	bool
-	err			error
-	spin 		components.SpinnerComponent
-	width		int
-	height		int
-	username	string
+	stats    *services.GitHubStats
+	loading  bool
+	err      error
+	spin     components.SpinnerComponent
+	width    int
+	height   int
+	username string
 }
 
 type statsLoadedMsg struct {
@@ -35,8 +35,8 @@ type statsTickMsg struct{}
 
 func StatsModel(username string) *statsModel {
 	return &statsModel{
-		loading: true,
-		spin: components.NewSpinner(),
+		loading:  true,
+		spin:     components.NewSpinner(),
 		username: username,
 	}
 }
@@ -73,7 +73,6 @@ func (m *statsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmds []tea.Cmd
 
-
 	newSpin, spinCmd := m.spin.Update(msg)
 	m.spin = newSpin
 	cmds = append(cmds, spinCmd)
@@ -82,7 +81,7 @@ func (m *statsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		
+
 	case statsLoadedMsg:
 		m.stats = msg.stats
 		m.loading = false
@@ -115,24 +114,24 @@ func (m *statsModel) View() string {
 	theme := styles.NewThemeFromName("default")
 
 	titleStyle := lipgloss.NewStyle().
-        Foreground(theme.Primary).
-        Bold(true).
-        MarginBottom(2)
-    
-    statBoxStyle := lipgloss.NewStyle().
-        Border(lipgloss.RoundedBorder()).
-        BorderForeground(theme.Accent).
-        Padding(1, 2).
-        Margin(0, 1)
-    
-    labelStyle := lipgloss.NewStyle().
-        Foreground(theme.Secondary).
-        Bold(true)
-    
-    valueStyle := lipgloss.NewStyle().
-        Foreground(theme.Primary).
-        Bold(true).
-        Align(lipgloss.Center)
+		Foreground(theme.Primary).
+		Bold(true).
+		MarginBottom(2)
+
+	statBoxStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(theme.Accent).
+		Padding(1, 2).
+		Margin(0, 1)
+
+	labelStyle := lipgloss.NewStyle().
+		Foreground(theme.Secondary).
+		Bold(true)
+
+	valueStyle := lipgloss.NewStyle().
+		Foreground(theme.Primary).
+		Bold(true).
+		Align(lipgloss.Center)
 
 	helpStyle := lipgloss.NewStyle().
 		Foreground(theme.Help).
@@ -157,7 +156,7 @@ func (m *statsModel) View() string {
 		valueStyle.Render(fmt.Sprintf("%d", m.stats.TotalRepos)),
 	))
 
-	starsStat := statBoxStyle.Render(fmt.Sprint("%s\n%s",
+	starsStat := statBoxStyle.Render(fmt.Sprintf("%s\n%s",
 		labelStyle.Render("Stars"),
 		valueStyle.Render(fmt.Sprintf("⭐ %d", m.stats.TotalStars)),
 	))
@@ -166,11 +165,11 @@ func (m *statsModel) View() string {
 		labelStyle.Render("Followers"),
 		valueStyle.Render(fmt.Sprintf("👥 %d", m.stats.Followers)),
 	))
-	
+
 	gistsStat := statBoxStyle.Render(fmt.Sprintf("%s\n%s",
-        labelStyle.Render("Public Gists"),
-        valueStyle.Render(fmt.Sprintf("📝 %d", m.stats.PublicGists)),
-    ))
+		labelStyle.Render("Public Gists"),
+		valueStyle.Render(fmt.Sprintf("📝 %d", m.stats.PublicGists)),
+	))
 
 	row1 := lipgloss.JoinHorizontal(lipgloss.Top, reposStat, starsStat)
 	row2 := lipgloss.JoinHorizontal(lipgloss.Top, followersStat, gistsStat)

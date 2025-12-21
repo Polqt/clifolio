@@ -9,52 +9,51 @@ import (
 )
 
 type appModel struct {
-	screen 			state.Screen
-	
-	introModel 		tea.Model
-	menuModel  		tea.Model		
+	screen state.Screen
 
-	intro      		tea.Model
-	menu       		tea.Model
-	projects   		tea.Model
-	projectDetail 	tea.Model
-	skills     		tea.Model
-	experience 		tea.Model
-	contact    		tea.Model
-	themePicker 	tea.Model
-	stats			tea.Model
-	matrix			tea.Model
+	introModel tea.Model
+	menuModel  tea.Model
 
-	theme 	   		string
-	menuOpen   		bool
+	intro         tea.Model
+	menu          tea.Model
+	projects      tea.Model
+	projectDetail tea.Model
+	skills        tea.Model
+	experience    tea.Model
+	contact       tea.Model
+	themePicker   tea.Model
+	stats         tea.Model
+	matrix        tea.Model
+
+	theme    string
+	menuOpen bool
 }
 
 func AppWithTheme(themeName string) tea.Model {
 	m := &appModel{
 		screen: state.ScreenIntro,
-		theme: themeName,
+		theme:  themeName,
 	}
 	m.menuModel = MenuModel()
 	m.introModel = nil
 	return m
 }
 
-
 func AppModel() appModel {
 	return appModel{
-		screen:     state.ScreenIntro,
-		intro:      IntroModel(),
-		menu:       MenuModel(),
-		projects:   ProjectsModel("Polqt"),
+		screen:        state.ScreenIntro,
+		intro:         IntroModel(),
+		menu:          MenuModel(),
+		projects:      ProjectsModel("Polqt"),
 		projectDetail: ProjectDetailsModel(services.Repo{}, ""),
-		skills:     SkillsModel(),
-		experience: ExperienceModel(),
-		contact:    ContactModel(),
-		themePicker: ThemePickerModel(),
-		stats: StatsModel("Polqt"),
-		matrix: MatrixModel(),
-		theme: "default",
-		menuOpen: false,
+		skills:        SkillsModel(),
+		experience:    ExperienceModel(),
+		contact:       ContactModel(),
+		themePicker:   ThemePickerModel(),
+		stats:         StatsModel("Polqt"),
+		matrix:        MatrixModel(),
+		theme:         "default",
+		menuOpen:      false,
 	}
 }
 
@@ -165,18 +164,18 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		newExperience, cmd := m.experience.Update(msg)
 		m.experience = newExperience
 		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
-            m.screen = state.ScreenMenu
-            return m, nil
-        }
+			m.screen = state.ScreenMenu
+			return m, nil
+		}
 		return m, cmd
 
 	case state.ScreenContact:
 		newContact, cmd := m.contact.Update(msg)
 		m.contact = newContact
 		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
-            m.screen = state.ScreenMenu
-            return m, nil
-        }
+			m.screen = state.ScreenMenu
+			return m, nil
+		}
 		return m, cmd
 
 	case state.ScreenTheme:
@@ -191,8 +190,17 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case state.ScreenStats:
 		newStats, cmd := m.stats.Update(msg)
 		m.stats = newStats
-		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenStats {
-			m.screen = state.ScreenStats
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
+			m.screen = state.ScreenMenu
+			return m, nil
+		}
+		return m, cmd
+
+	case state.ScreenMatrix:
+		newMatrix, cmd := m.matrix.Update(msg)
+		m.matrix = newMatrix
+		if screen, ok := msg.(state.Screen); ok && screen == state.ScreenMenu {
+			m.screen = state.ScreenMenu
 			return m, nil
 		}
 		return m, cmd
@@ -219,6 +227,10 @@ func (m appModel) View() string {
 		return m.contact.View()
 	case state.ScreenTheme:
 		return m.themePicker.View()
+	case state.ScreenStats:
+		return m.stats.View()
+	case state.ScreenMatrix:
+		return m.matrix.View()
 	default:
 		return ""
 	}
