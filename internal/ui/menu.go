@@ -111,7 +111,7 @@ func (m *menuModel) View() string {
 	content += titleStyle.Render("Portfolio Navigator") + "\n"
 	content += subtitleStyle.Render("What would you like to explore?") + "\n\n"
 
-	// Menu items - clean and aligned
+	// Menu items 
 	for i, it := range m.items {
 		icon := getScreenIcon(it)
 		itemText := icon + "  " + it.String()
@@ -141,7 +141,7 @@ func getScreenIcon(s state.Screen) string {
 	case state.ScreenProjects:
 		return "📁"
 	case state.ScreenSkills:
-		return "🛠️"
+		return "🔧"
 	case state.ScreenExperience:
 		return "💼"
 	case state.ScreenContact:

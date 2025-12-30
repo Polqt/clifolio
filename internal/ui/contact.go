@@ -132,7 +132,7 @@ func (m *contactModel) View() string {
 	content += titleStyle.Render("📧 Get In Touch") + "\n"
 	content += subtitleStyle.Render("Let's connect and collaborate") + "\n\n"
 
-	// Contact items - simple list
+	// Contact items
 	for i, contact := range m.contacts {
 		icon := getIcon(contact.Name)
 

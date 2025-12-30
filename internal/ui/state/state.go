@@ -13,6 +13,7 @@ const (
 	ScreenTheme
 	ScreenStats
 	ScreenMatrix
+	ScreenHacker
 )
 
 func (s Screen) String() string {

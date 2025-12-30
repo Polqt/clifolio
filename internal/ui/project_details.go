@@ -101,6 +101,10 @@ func (m projectDetailsModel) View() string {
 
 	s += "\n" + header + "\n"
 
+	if m.loaded && m.rendered != "" {
+		s += m.rendered + "\n"
+	}
+
 	s += helpStyle.Render("\n↑/↓: navigate • enter: select • q: quit")
 	return s
 }
