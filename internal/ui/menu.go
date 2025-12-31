@@ -3,154 +3,205 @@ package ui
 import (
 	"clifolio/internal/styles"
 	"clifolio/internal/ui/components"
-	"clifolio/internal/ui/state"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-type menuModel struct {
-	open   bool
-	items  []state.Screen
-	idx    int
-	width  int
-	height int
+type MenuModel struct {
+	cursor 		int
+	choices 	[]components.ListItem
+	search		textinput.Model
+	theme 		styles.Theme
+	width		int
+	height 		int
 }
 
-func MenuModel() tea.Model {
-	return &menuModel{
-		items: []state.Screen{
-			state.ScreenProjects,
-			state.ScreenSkills,
-			state.ScreenExperience,
-			state.ScreenContact,
-			state.ScreenTheme,
-			state.ScreenStats,
+func NewMenuModel(theme styles.Theme) MenuModel {
+	ti := textinput.New()
+	ti.Placeholder = "Search commands..."
+	ti.CharLimit = 50
+	ti.Width = 40
+
+	choices := []components.ListItem{
+		{
+			Title: "Projects",
+			Content: "",
+			Icon: "📦",
+			Badge: "GitHub",
 		},
+		{
+			Title: "Skills",
+			Content: "",
+			Icon: "⚡",
+			Badge: "Tech Stack",
+		},
+		{
+			Title: "Experience",
+			Content: "",
+			Icon: "💼",
+			Badge: "Career",
+		},
+		{
+			Title: "Contact",
+			Content: "",
+			Icon: "📧",
+			Badge: "Social",
+		},
+		{
+			Title: "Themes",
+			Content: "",
+			Icon: "🎨",
+			Badge: "Customize",
+		},
+		{
+			Title: "About",
+			Content: "",
+			Icon: "ℹ️",
+			Badge: "Info",
+		},
+		{
+			Title: "Matrix Mode",
+			Content: "",
+			Icon: "🟢",
+			Badge: "Easter Egg",
+		},
+	}
+	return MenuModel{
+		cursor: 0,
+		choices: choices,
+		search: ti,
+		theme: theme,
 	}
 }
 
-func (m *menuModel) Init() tea.Cmd {
-	return nil
+func (m MenuModel) Init() tea.Cmd {
+	return textinput.Blink
 }
 
-func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	km := components.DefaultKeymap()
-	switch msg := msg.(type) {
+	var cmd tea.Cmd
 
+	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-
+		return m, nil
+	
 	case tea.KeyMsg:
+		if m.search.Focused() {
+			switch msg.String() {
+			case "esc", km.Back:
+				m.search.Blur()
+				return m, nil
+			case km.Confirm:
+				m.search.Blur()
+				return m, nil
+			}
+			m.search, cmd = m.search.Update(msg)
+			return m, cmd
+		}
+
 		switch msg.String() {
-		case km.Toggle:
-			m.open = !m.open
-		case km.Confirm, "enter":
-			if m.open {
-				return m, func() tea.Msg {
-					return m.items[m.idx]
-				}
+		case km.Up, "up":
+			if m.cursor > 0 {
+				m.cursor--
 			}
 		case km.Down, "down":
-			if m.idx < len(m.items)-1 {
-				m.idx++
-			} else {
-				m.idx = 0
+			if m.cursor < len(m.choices) - 1 {
+				m.cursor++
 			}
-		case km.Up, "up":
-			if m.idx > 0 {
-				m.idx--
-			} else {
-				m.idx = len(m.items) - 1
-			}
+		case km.Toggle:
+			m.search.Focus()
+			return m, textinput.Blink
 		case km.Quit, "ctrl+c":
 			return m, tea.Quit
+		case km.Confirm, " ":
+			return m, func() tea.Msg {
+				return NavigateMsg{Screen: m.getSelectedScreen()}
+			}
 		}
 	}
+
 	return m, nil
 }
 
-func (m *menuModel) View() string {
-	theme := styles.NewThemeFromName("default")
+func (m MenuModel) View() string {
+	if m.width == 0 { 
+		return "Loading..."
+	}
 
-	// Charm-style clean styling
-	titleStyle := lipgloss.NewStyle().
-		Foreground(theme.Primary).
-		Bold(true).
-		MarginBottom(1)
+	var sections []string
 
-	subtitleStyle := lipgloss.NewStyle().
-		Foreground(theme.Secondary).
+	header := components.HeaderBox("COMMAND PALETTE", m.theme, m.width-4)
+	sections = append(sections, header)
+
+	subtitle := lipgloss.NewStyle().
+		Foreground(m.theme.Secondary).
 		Italic(true).
-		MarginBottom(2)
+		Align(lipgloss.Center).
+		Width(m.width).
+		Render("Navigate through my portfolio")
+	sections = append(sections, subtitle)
 
-	selectedStyle := lipgloss.NewStyle().
-		Foreground(theme.Accent).
-		Bold(true)
+	sections = append(sections, components.DividerLine(m.theme, m.width-4, "─"))
 
-	normalStyle := lipgloss.NewStyle().
-		Foreground(theme.Secondary)
-
-	cursorStyle := lipgloss.NewStyle().
-		Foreground(theme.Accent).
-		Bold(true)
-
-	helpStyle := lipgloss.NewStyle().
-		Foreground(theme.Help).
-		MarginTop(2)
-
-	boxStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Primary).
-		Padding(2, 4)
-
-	var content string
-
-	// Title
-	content += titleStyle.Render("Portfolio Navigator") + "\n"
-	content += subtitleStyle.Render("What would you like to explore?") + "\n\n"
-
-	// Menu items 
-	for i, it := range m.items {
-		icon := getScreenIcon(it)
-		itemText := icon + "  " + it.String()
-
-		if i == m.idx {
-			cursor := cursorStyle.Render("▸ ")
-			content += cursor + selectedStyle.Render(itemText) + "\n"
-		} else {
-			content += "  " + normalStyle.Render(itemText) + "\n"
-		}
+	if m.search.Focused() {
+		searchBox := lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(m.theme.Accent).
+			Padding(0, 1).
+			Width(m.width - 10).
+			Align(lipgloss.Center).
+			Render(m.search.View())
+		sections = append(sections, lipgloss.PlaceHorizontal(m.width, lipgloss.Center, searchBox))
 	}
 
-	// Help text
-	content += helpStyle.Render("\n↑/↓ navigate • enter select • m matrix • q quit")
-
-	box := boxStyle.Render(content)
-
-	// Center the menu box
-	if m.width > 0 && m.height > 0 {
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, box)
+	listStyle := components.ListStyle{
+		ShowNumbers: false,
+		ShowIcons: true,
+		ShowBadges: true,
+		CompactMode: false,
+		HighlightColor: m.theme.Accent.(lipgloss.Color),
 	}
-	return "\n" + box
+
+	list := components.RenderList(m.choices, m.cursor, m.theme, listStyle)
+	listBox := components.SectionBox("Available Commands", list, m.theme, m.width-8)
+	sections = append(sections, lipgloss.PlaceHorizontal(m.width, lipgloss.Center, listBox))
+
+
+	keyBindings := []components.KeyBind{
+		{Key: "↑↓", Desc: "Navigate"},
+        {Key: "Enter", Desc: "Select"},
+        {Key: "/", Desc: "Search"},
+        {Key: "q", Desc: "Quit"},
+	}
+
+	footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
+	sections = append(sections, footer)
+
+	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
+	
+	return lipgloss.Place(
+		m.width,
+		m.cursor,
+		lipgloss.Center,
+		lipgloss.Center,
+		content,
+	)
 }
 
-func getScreenIcon(s state.Screen) string {
-	switch s {
-	case state.ScreenProjects:
-		return "📁"
-	case state.ScreenSkills:
-		return "🔧"
-	case state.ScreenExperience:
-		return "💼"
-	case state.ScreenContact:
-		return "📧"
-	case state.ScreenTheme:
-		return "🎨"
-	case state.ScreenStats:
-		return "📊"
-	default:
-		return "•"
+func (m MenuModel) getSelectedScreen() string {
+	screens := map[int]string{
+		0: "projects",
+        1: "skills",
+        2: "experience",
+        3: "contact",
+        4: "themes",
+        5: "about",
+        6: "matrix",
 	}
+	return screens[m.cursor]
 }
