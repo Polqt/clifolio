@@ -9,16 +9,27 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type MenuModel struct {
+type NavigateMsg struct {
+	Screen string
+}
+
+
+type menuModel struct {
 	cursor 		int
 	choices 	[]components.ListItem
 	search		textinput.Model
 	theme 		styles.Theme
 	width		int
 	height 		int
+	open 		bool
 }
 
-func NewMenuModel(theme styles.Theme) MenuModel {
+func MenuModel() *menuModel {
+	theme := styles.NewThemeFromName("default")
+	return NewMenuModel(theme)
+}
+
+func NewMenuModel(theme styles.Theme) *menuModel {
 	ti := textinput.New()
 	ti.Placeholder = "Search commands..."
 	ti.CharLimit = 50
@@ -68,7 +79,7 @@ func NewMenuModel(theme styles.Theme) MenuModel {
 			Badge: "Easter Egg",
 		},
 	}
-	return MenuModel{
+	return &menuModel{
 		cursor: 0,
 		choices: choices,
 		search: ti,
@@ -76,11 +87,11 @@ func NewMenuModel(theme styles.Theme) MenuModel {
 	}
 }
 
-func (m MenuModel) Init() tea.Cmd {
+func (m menuModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *menuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	km := components.DefaultKeymap()
 	var cmd tea.Cmd
 
@@ -128,7 +139,7 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m MenuModel) View() string {
+func (m menuModel) View() string {
 	if m.width == 0 { 
 		return "Loading..."
 	}
@@ -193,7 +204,7 @@ func (m MenuModel) View() string {
 	)
 }
 
-func (m MenuModel) getSelectedScreen() string {
+func (m menuModel) getSelectedScreen() string {
 	screens := map[int]string{
 		0: "projects",
         1: "skills",

@@ -11,9 +11,6 @@ import (
 type appModel struct {
 	screen state.Screen
 
-	introModel tea.Model
-	menuModel  tea.Model
-
 	intro         tea.Model
 	menu          tea.Model
 	projects      tea.Model
@@ -34,8 +31,8 @@ func AppWithTheme(themeName string) tea.Model {
 		screen: state.ScreenIntro,
 		theme:  themeName,
 	}
-	m.menuModel = MenuModel()
-	m.introModel = nil
+	m.menu = MenuModel()
+	m.intro = nil
 	return m
 }
 
