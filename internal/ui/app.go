@@ -78,9 +78,6 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Handle intro -> menu
 	if _, ok := msg.(goToMenuMsg); ok {
 		m.screen = state.ScreenMenu
-		if mm, ok := m.menu.(*menuModel); ok {
-			mm.open = true
-		}
 		return m, nil
 
 	}
@@ -103,11 +100,19 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.projectDetail.Init()
 	}
 
-	if key, ok := msg.(tea.KeyMsg); ok {
-		if key.String() == "m" && m.screen == state.ScreenMenu {
-			m.screen = state.ScreenMatrix
+	if screen, ok := msg.(state.Screen); ok {
+		m.screen = screen
+		switch screen {
+		case state.ScreenProjects:
+			return m, m.projects.Init()
+		case state.ScreenStats:
+			return m, m.stats.Init()
+		case state.ScreenTheme:
+			return m, m.themePicker.Init()
+		case state.ScreenMatrix:
 			return m, m.matrix.Init()
 		}
+		return m, nil
 	}
 
 	switch m.screen {
@@ -229,7 +234,7 @@ func (m appModel) View() string {
 	case state.ScreenMatrix:
 		return m.matrix.View()
 	default:
-		return ""
+		return "Unknown Screen"
 	}
 }
 
