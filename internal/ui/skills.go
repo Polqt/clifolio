@@ -1,176 +1,329 @@
 package ui
 
 import (
-	"clifolio/internal/styles"
-	"clifolio/internal/ui/components"
-	"clifolio/internal/ui/state"
+    "clifolio/internal/styles"
+    "clifolio/internal/ui/components"
+    "fmt"
+    "strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+    tea "github.com/charmbracelet/bubbletea"
+    "github.com/charmbracelet/lipgloss"
 )
 
-type Category struct {
-	Name  string
-	Items []string
+type NavigateMsg struct {
+	Screen string
 }
 
-type skillsModel struct {
-	categories []Category
-	catIndex   int
-	cursor     int
+type Skill struct {
+    Name       string
+    Level      int // 1-5
+    Category   string
+    Years      int
+    Icon       string
+    Projects   int
 }
 
-func SkillsModel() *skillsModel {
-	return &skillsModel{
-		categories: []Category{
-			{
-				Name:  "Languages",
-				Items: []string{"Go", "Python", "JavaScript", "TypeScript", "SQL"},
-			},
-			{
-				Name:  "Frameworks",
-				Items: []string{"React", "Vue", "Next", "Svelte", "MUI", "TailwindCSS", "React Native", "Flutter", "tRPC"},
-			},
-			{
-				Name:  "Tools",
-				Items: []string{"Docker", "Git", "GitHub"},
-			},
-			{
-				Name:  "Other",
-				Items: []string{"REST", "GraphQL", "gRPC", "Microservices", "CI/CD", "TDD", "Agile"},
-			},
-		},
-		catIndex: 0,
-		cursor:   0,
-	}
+type SkillsModel struct {
+    skills   []Skill
+    cursor   int
+    theme    styles.Theme
+    width    int
+    height   int
+    keymap   components.Keymap
+    category string 
 }
 
-func (m *skillsModel) Init() tea.Cmd {
-	return nil
+func NewSkillsModel(theme styles.Theme) SkillsModel {
+    skills := []Skill{
+        {Name: "Go", Level: 4, Category: "languages", Years: 2, Icon: "🐹", Projects: 15},
+        {Name: "JavaScript", Level: 5, Category: "languages", Years: 4, Icon: "🟨", Projects: 30},
+        {Name: "TypeScript", Level: 4, Category: "languages", Years: 3, Icon: "🔷", Projects: 25},
+        {Name: "Python", Level: 3, Category: "languages", Years: 2, Icon: "🐍", Projects: 10},
+        {Name: "Flutter", Level: 4, Category: "frameworks", Years: 2, Icon: "🎯", Projects: 8},
+        {Name: "React", Level: 5, Category: "frameworks", Years: 3, Icon: "⚛️", Projects: 20},
+        {Name: "Node.js", Level: 4, Category: "frameworks", Years: 3, Icon: "🟩", Projects: 18},
+        {Name: "Docker", Level: 4, Category: "tools", Years: 2, Icon: "🐳", Projects: 12},
+        {Name: "Git", Level: 5, Category: "tools", Years: 4, Icon: "🔧", Projects: 50},
+        {Name: "PostgreSQL", Level: 4, Category: "tools", Years: 3, Icon: "🐘", Projects: 15},
+        {Name: "Redis", Level: 3, Category: "tools", Years: 1, Icon: "🔴", Projects: 5},
+        {Name: "Problem Solving", Level: 5, Category: "soft", Years: 5, Icon: "🧩", Projects: 0},
+        {Name: "Team Leadership", Level: 4, Category: "soft", Years: 3, Icon: "👥", Projects: 0},
+        {Name: "Communication", Level: 5, Category: "soft", Years: 5, Icon: "💬", Projects: 0},
+    }
+
+    return SkillsModel{
+        skills:   skills,
+        theme:    theme,
+        keymap:   components.DefaultKeymap(),
+        category: "all",
+    }
 }
 
-func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	km := components.DefaultKeymap()
-
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		case "left", "h":
-			if m.catIndex > 0 {
-				m.catIndex--
-				m.cursor = 0
-			}
-		case "right", "l":
-			if m.catIndex < len(m.categories)-1 {
-				m.catIndex++
-				m.cursor = 0
-			}
-		case km.Up, "up":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case km.Down, "down":
-			if m.cursor < len(m.categories[m.catIndex].Items)-1 {
-				m.cursor++
-			}
-		case km.Back, "esc":
-			return m, func() tea.Msg { return state.ScreenMenu }
-		}
-	}
-	return m, nil
+func (m SkillsModel) Init() tea.Cmd {
+    return nil
 }
 
-func (m *skillsModel) View() string {
-	theme := styles.NewThemeFromName("default")
+func (m SkillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case tea.WindowSizeMsg:
+        m.width = msg.Width
+        m.height = msg.Height
+        return m, nil
 
-	// Styles
-	titleStyle := lipgloss.NewStyle().
-		Foreground(theme.Primary).
-		Bold(true).
-		Align(lipgloss.Center).
-		MarginBottom(1)
+    case tea.KeyMsg:
+        filteredSkills := m.getFilteredSkills()
 
-	subtitleStyle := lipgloss.NewStyle().
-		Foreground(theme.Secondary).
-		Align(lipgloss.Center).
-		Italic(true).
-		MarginBottom(2)
+        switch msg.String() {
+        case m.keymap.Up, "k":
+            if m.cursor > 0 {
+                m.cursor--
+            }
+        case m.keymap.Down, "j":
+            if m.cursor < len(filteredSkills)-1 {
+                m.cursor++
+            }
+        case m.keymap.Left, "h":
+            m.cycleCategoryBackward()
+            m.cursor = 0
+        case m.keymap.Right, "l":
+            m.cycleCategoryForward()
+            m.cursor = 0
+        case m.keymap.Back, "esc":
+            return m, func() tea.Msg {
+                return NavigateMsg{Screen: "menu"}
+            }
+        case m.keymap.Quit, "ctrl+c":
+            return m, tea.Quit
+        }
+    }
 
-	tabActiveStyle := lipgloss.NewStyle().
-		Foreground(theme.Accent).
-		Bold(true).
-		Underline(true).
-		Padding(0, 2)
+    return m, nil
+}
 
-	tabInactiveStyle := lipgloss.NewStyle().
-		Foreground(theme.Secondary).
-		Padding(0, 2)
+func (m SkillsModel) View() string {
+    if m.width == 0 {
+        return "Loading..."
+    }
 
-	containerStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Primary).
-		Padding(2, 4)
+    var sections []string
 
-	itemBoxStyle := lipgloss.NewStyle().
-		Padding(1, 2).
-		Margin(1, 0)
+    // Header
+    header := components.HeaderBox("SKILLS & EXPERTISE", m.theme, m.width-4)
+    sections = append(sections, header)
 
-	selectedItemStyle := lipgloss.NewStyle().
-		Foreground(theme.Accent).
-		Bold(true)
+    // Category tabs
+    categoryTabs := m.renderCategoryTabs()
+    sections = append(sections, categoryTabs)
 
-	normalItemStyle := lipgloss.NewStyle().
-		Foreground(theme.Secondary)
+    // Divider
+    sections = append(sections, components.DividerLine(m.theme, m.width-4, "─"))
 
-	cursorStyle := lipgloss.NewStyle().
-		Foreground(theme.Accent).
-		Bold(true)
+    // Stats overview
+    stats := m.renderStatsOverview()
+    sections = append(sections, stats)
 
-	helpStyle := lipgloss.NewStyle().
-		Foreground(theme.Help).
-		MarginTop(2)
+    // Skills grid/list
+    skillsView := m.renderSkillsGrid()
+    sections = append(sections, skillsView)
 
-	// Build output
-	var output string
-	output += titleStyle.Render("🛠️  Skills & Technologies") + "\n"
-	output += subtitleStyle.Render("Technical expertise across the stack") + "\n\n"
+    // Skill details for selected
+    filteredSkills := m.getFilteredSkills()
+    if len(filteredSkills) > 0 && m.cursor < len(filteredSkills) {
+        detail := m.renderSkillDetail(filteredSkills[m.cursor])
+        sections = append(sections, detail)
+    }
 
-	// Category tabs - simpler, aligned
-	var tabs string
-	for i, c := range m.categories {
-		if i == m.catIndex {
-			tabs += tabActiveStyle.Render(c.Name)
-		} else {
-			tabs += tabInactiveStyle.Render(c.Name)
-		}
-		if i < len(m.categories)-1 {
-			tabs += "  "
-		}
-	}
-	output += tabs + "\n\n"
+    // Key bindings
+    keyBindings := []components.KeyBind{
+        {Key: "←→/h/l", Desc: "Switch Category"},
+        {Key: "↑↓/k/j", Desc: "Navigate"},
+        {Key: "b/Esc", Desc: "Back"},
+        {Key: "q", Desc: "Quit"},
+    }
+    footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
+    sections = append(sections, footer)
 
-	// Items
-	items := m.categories[m.catIndex].Items
-	if len(items) == 0 {
-		output += normalItemStyle.Render("(no items in this category)") + "\n"
-		output += helpStyle.Render("\nPress ESC to go back")
-		return containerStyle.Render(output)
-	}
+    content := lipgloss.JoinVertical(lipgloss.Left, sections...)
 
-	// Item list - clean and aligned
-	var itemsList string
-	for i, it := range items {
-		if i == m.cursor {
-			itemsList += cursorStyle.Render("▸ ") + selectedItemStyle.Render("• "+it) + "\n"
-		} else {
-			itemsList += "  " + normalItemStyle.Render("• "+it) + "\n"
-		}
-	}
+    return lipgloss.Place(
+        m.width,
+        m.height,
+        lipgloss.Center,
+        lipgloss.Center,
+        content,
+    )
+}
 
-	output += itemBoxStyle.Render(itemsList)
-	output += helpStyle.Render("\n←/→ switch tabs • ↑/↓ navigate • ESC back • q quit")
+func (m SkillsModel) renderCategoryTabs() string {
+    categories := []struct {
+        ID    string
+        Label string
+        Icon  string
+    }{
+        {"all", "All Skills", "📚"},
+        {"languages", "Languages", "💻"},
+        {"frameworks", "Frameworks", "🔧"},
+        {"tools", "Tools", "⚙️"},
+        {"soft", "Soft Skills", "🎯"},
+    }
 
-	return "\n" + containerStyle.Render(output)
+    activeStyle := lipgloss.NewStyle().
+        Foreground(m.theme.Accent).
+        Background(lipgloss.Color("#1a1a1a")).
+        Bold(true).
+        Padding(0, 2).
+        Border(lipgloss.RoundedBorder()).
+        BorderForeground(m.theme.Accent)
+
+    inactiveStyle := lipgloss.NewStyle().
+        Foreground(m.theme.Secondary).
+        Padding(0, 2)
+
+    var tabs []string
+    for _, cat := range categories {
+        label := cat.Icon + " " + cat.Label
+        if cat.ID == m.category {
+            tabs = append(tabs, activeStyle.Render(label))
+        } else {
+            tabs = append(tabs, inactiveStyle.Render(label))
+        }
+    }
+
+    return lipgloss.PlaceHorizontal(
+        m.width,
+        lipgloss.Center,
+        lipgloss.JoinHorizontal(lipgloss.Top, tabs...),
+    )
+}
+
+func (m SkillsModel) renderStatsOverview() string {
+    filteredSkills := m.getFilteredSkills()
+    
+    totalSkills := len(filteredSkills)
+    avgLevel := 0.0
+    totalProjects := 0
+    totalYears := 0
+
+    for _, skill := range filteredSkills {
+        avgLevel += float64(skill.Level)
+        totalProjects += skill.Projects
+        totalYears += skill.Years
+    }
+
+    if totalSkills > 0 {
+        avgLevel /= float64(totalSkills)
+    }
+
+    stats := []string{
+        fmt.Sprintf("📊 %d Skills", totalSkills),
+        fmt.Sprintf("⭐ %.1f Avg Level", avgLevel),
+        fmt.Sprintf("📦 %d Projects", totalProjects),
+        fmt.Sprintf("📅 %d Years Combined", totalYears),
+    }
+
+    statStyle := lipgloss.NewStyle().
+        Foreground(m.theme.Secondary).
+        Background(lipgloss.Color("#1a1a1a")).
+        Padding(0, 2).
+        Margin(1, 0)
+
+    var statBoxes []string
+    for _, stat := range stats {
+        statBoxes = append(statBoxes, statStyle.Render(stat))
+    }
+
+    return lipgloss.PlaceHorizontal(
+        m.width,
+        lipgloss.Center,
+        lipgloss.JoinHorizontal(lipgloss.Top, statBoxes...),
+    )
+}
+
+func (m SkillsModel) renderSkillsGrid() string {
+    filteredSkills := m.getFilteredSkills()
+    
+    items := make([]components.ListItem, len(filteredSkills))
+    for i, skill := range filteredSkills {
+        levelBar := m.renderLevelBar(skill.Level)
+        
+        desc := fmt.Sprintf("%s\n%d years experience", levelBar, skill.Years)
+        if skill.Projects > 0 {
+            desc += fmt.Sprintf(" • %d projects", skill.Projects)
+        }
+
+        items[i] = components.ListItem{
+            Title:       skill.Name,
+            Content: 	 desc,
+            Icon:        skill.Icon,
+            Badge:       fmt.Sprintf("Lvl %d", skill.Level),
+        }
+    }
+
+    return components.RenderCardList(items, m.cursor, m.theme, m.width-8)
+}
+
+func (m SkillsModel) renderLevelBar(level int) string {
+    filled := strings.Repeat("█", level)
+    empty := strings.Repeat("░", 5-level)
+    
+    filledStyle := lipgloss.NewStyle().Foreground(m.theme.Accent)
+    emptyStyle := lipgloss.NewStyle().Foreground(m.theme.Secondary)
+    
+    return filledStyle.Render(filled) + emptyStyle.Render(empty)
+}
+
+func (m SkillsModel) renderSkillDetail(skill Skill) string {
+    var details []string
+
+    details = append(details, components.InfoPanel("Skill", skill.Name, m.theme))
+    details = append(details, components.InfoPanel("Level", m.renderLevelBar(skill.Level), m.theme))
+    details = append(details, components.InfoPanel("Experience", fmt.Sprintf("%d years", skill.Years), m.theme))
+    
+    if skill.Projects > 0 {
+        details = append(details, components.InfoPanel("Projects", fmt.Sprintf("%d", skill.Projects), m.theme))
+    }
+    
+    details = append(details, components.InfoPanel("Category", skill.Category, m.theme))
+
+    content := strings.Join(details, "\n")
+    
+    return lipgloss.PlaceHorizontal(
+        m.width,
+        lipgloss.Center,
+        components.SectionBox("Selected Skill Details", content, m.theme, m.width-8),
+    )
+}
+
+func (m SkillsModel) getFilteredSkills() []Skill {
+    if m.category == "all" {
+        return m.skills
+    }
+
+    var filtered []Skill
+    for _, skill := range m.skills {
+        if skill.Category == m.category {
+            filtered = append(filtered, skill)
+        }
+    }
+    return filtered
+}
+
+func (m *SkillsModel) cycleCategoryForward() {
+    categories := []string{"all", "languages", "frameworks", "tools", "soft"}
+    for i, cat := range categories {
+        if cat == m.category {
+            m.category = categories[(i+1)%len(categories)]
+            return
+        }
+    }
+}
+
+func (m *SkillsModel) cycleCategoryBackward() {
+    categories := []string{"all", "languages", "frameworks", "tools", "soft"}
+    for i, cat := range categories {
+        if cat == m.category {
+            m.category = categories[(i-1+len(categories))%len(categories)]
+            return
+        }
+    }
 }
