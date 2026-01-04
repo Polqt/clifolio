@@ -18,7 +18,7 @@ func RenderKeyBindings(bindings []KeyBind, theme styles.Theme, width int) string
 		Bold(true).
 		Background(lipgloss.Color("#1a1a1a")).
 		Padding(0, 1)
-	
+
 	descStyle := lipgloss.NewStyle().
 		Foreground(theme.Secondary)
 
@@ -27,7 +27,7 @@ func RenderKeyBindings(bindings []KeyBind, theme styles.Theme, width int) string
 		hint := keyStyle.Render(binding.Key) + " " + descStyle.Render(binding.Desc)
 		hints = append(hints, hint)
 	}
-	
+
 	content := strings.Join(hints, "  •  ")
 
 	return lipgloss.NewStyle().
@@ -36,6 +36,7 @@ func RenderKeyBindings(bindings []KeyBind, theme styles.Theme, width int) string
 		Foreground(theme.Secondary).
 		BorderTop(true).
 		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(theme.Secondary).
 		Padding(1, 0).
 		Render(content)
 }
@@ -48,7 +49,7 @@ func RenderHelpMenu(sections map[string][]KeyBind, theme styles.Theme) string {
 		Bold(true).
 		MarginTop(1).
 		MarginBottom(1)
-	
+
 	keyStyle := lipgloss.NewStyle().
 		Foreground(theme.Accent).
 		Width(15).
@@ -58,8 +59,8 @@ func RenderHelpMenu(sections map[string][]KeyBind, theme styles.Theme) string {
 		Foreground(theme.Secondary)
 
 	for section, bindings := range sections {
-		output.WriteString(sectionStyle.Render("▸ " + section) + "\n")
-		
+		output.WriteString(sectionStyle.Render("▸ "+section) + "\n")
+
 		for _, binding := range bindings {
 			line := lipgloss.JoinHorizontal(
 				lipgloss.Top,
@@ -68,16 +69,16 @@ func RenderHelpMenu(sections map[string][]KeyBind, theme styles.Theme) string {
 			)
 			output.WriteString("  " + line + "\n")
 		}
-	} 
+	}
 
 	return output.String()
 }
 
 func GetNavigationBindings(km Keymap) []KeyBind {
-	return []KeyBind {
+	return []KeyBind{
 		{Key: km.Up + "/" + km.Down, Desc: "Navigate"},
-        {Key: km.Confirm, Desc: "Select"},
-        {Key: km.Back, Desc: "Back"},
-        {Key: km.Quit, Desc: "Quit"},
+		{Key: km.Confirm, Desc: "Select"},
+		{Key: km.Back, Desc: "Back"},
+		{Key: km.Quit, Desc: "Quit"},
 	}
 }
