@@ -1,9 +1,9 @@
 package services
 
-import "io/ioutil"
+import "os"
 
 func LoadASCII(path string) (string, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
 	}

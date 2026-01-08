@@ -14,6 +14,21 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Helper functions for min/max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 type projectsModel struct {
 	username string
 	projects []services.Repo

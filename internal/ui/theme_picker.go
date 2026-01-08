@@ -49,10 +49,10 @@ func (m *themePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor = 0
 			}
 		case km.Up, "up":
-			if m.cursor >0 {
+			if m.cursor > 0 {
 				m.cursor--
 			} else {
-				m.cursor = len(m.themes)-1
+				m.cursor = len(m.themes) - 1
 			}
 		case km.Confirm:
 			if m.cursor >= 0 && m.cursor < len(m.themes) {
@@ -66,13 +66,13 @@ func (m *themePickerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *themePickerModel) View() string {
 	s := "\n\n🎨 Theme Picker\n\n"
-	
+
 	for i, theme := range m.themes {
 		cursor := " "
 		if m.cursor == i {
 			cursor = ">"
 		}
-		s+= fmt.Sprintf("%s %s\n", cursor, theme)
+		s += fmt.Sprintf("%s %s\n", cursor, theme)
 	}
 
 	s += "\nUse the arrow keys to navigate, Enter to select, Esc to go back.\n"

@@ -43,7 +43,6 @@ func tickMatrix() tea.Cmd {
 	})
 }
 
-
 func (m *matrixModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -72,7 +71,7 @@ func (m *matrixModel) updateColumns() {
 			col.yPos++
 
 			// Reset column when it goes off screen
-			if col.yPos > m.height + col.length {
+			if col.yPos > m.height+col.length {
 				col.yPos = -col.length
 				col.chars = generateMatrixChars(m.height + 20)
 				col.speed = rand.Intn(3) + 1
@@ -87,8 +86,10 @@ func (m *matrixModel) initColumns() {
 
 	for i := range m.columns {
 		m.columns[i] = column{
-			chars: generateMatrixChars(m.height + 20),
-
+			chars:  generateMatrixChars(m.height + 20),
+			yPos:   rand.Intn(m.height) - m.height,
+			speed:  rand.Intn(3) + 1,
+			length: rand.Intn(15) + 5,
 		}
 	}
 }
@@ -110,7 +111,7 @@ func (m *matrixModel) View() string {
 	}
 
 	theme := styles.NewThemeFromName("default")
-	
+
 	// 2D grid to hold characters
 	grid := make([][]rune, m.height)
 	for i := range grid {
@@ -127,8 +128,8 @@ func (m *matrixModel) View() string {
 		}
 
 		// Draw the tail of chars
-		for i := 0; i < col.length; i ++ {
-			y := col.yPos - 1 
+		for i := 0; i < col.length; i++ {
+			y := col.yPos - i
 			if y >= 0 && y < m.height {
 				charIndex := (y + i) % len(col.chars)
 				grid[y][x] = col.chars[charIndex]
@@ -153,7 +154,7 @@ func (m *matrixModel) View() string {
 				} else if distFromHead < col.length/3 {
 					style = lipgloss.NewStyle().Foreground(theme.Primary)
 				} else if distFromHead < col.length*2/3 {
-					style =lipgloss.NewStyle().Foreground(theme.Secondary)
+					style = lipgloss.NewStyle().Foreground(theme.Secondary)
 				} else {
 					style = lipgloss.NewStyle().Foreground(lipgloss.Color("#003300"))
 				}
@@ -161,7 +162,7 @@ func (m *matrixModel) View() string {
 				output += style.Render(string(char))
 			}
 		}
-		if y < m.height - 1 {
+		if y < m.height-1 {
 			output += "\n"
 		}
 	}

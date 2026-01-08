@@ -40,8 +40,7 @@ func StartSSHServer(appFactory func() tea.Model) {
 		log.Fatalln(err)
 	}
 
-
-	done := make(chan os.Signal, 1) 
+	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	log.Printf("Starting SSH server on %s:%s", host, port)
@@ -51,11 +50,11 @@ func StartSSHServer(appFactory func() tea.Model) {
 			log.Fatalln(err)
 		}
 	}()
-	
+
 	// Wait for shutdown signal, then close the connection
 	<-done
-	log.Printf("Stoping SSH Server")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second) 
+	log.Printf("Stopping SSH Server")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := s.Shutdown(ctx); err != nil {
 		log.Fatalln(err)
