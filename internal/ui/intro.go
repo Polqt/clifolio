@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"clifolio/internal/services"
+	"clifolio/internal/styles"
+	"clifolio/internal/ui/components"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -14,14 +16,15 @@ type tickMsg struct{}
 type goToMenuMsg struct{}
 
 type introModel struct {
-	fullRunes    []rune
-	pos          int
-	lines        []string
-	done         bool
-	ascii        []string
-	showASCII    bool
-	asciiIndex   int
-	asciiOpacity float64
+	fullRunes []rune
+	pos       int
+	lines     []string
+	done      bool
+	ascii     []string
+	showASCII bool
+	theme     styles.Theme
+	width     int
+	height    int
 }
 
 func IntroModel() introModel {
@@ -30,22 +33,24 @@ func IntroModel() introModel {
 	if err == nil {
 		fullText = string(introData)
 	} else {
-		fullText = `Press any key to continue...`
+		fullText = "Welcome to my portfolio!\n\nI'm a passionate developer building amazing applications."
 	}
 
 	fullText = strings.ReplaceAll(fullText, "\r\n", "\n")
 
 	data, err := services.LoadASCII("assets/ascii.txt")
 	var ascii []string
-	if err == nil {
-		ascii = append(ascii, string(data), "\n")
+	if err == nil && len(data) > 0 {
+		ascii = strings.Split(string(data), "\n")
 	}
 
+	theme := styles.NewThemeFromName("default")
+
 	return introModel{
-		fullRunes:    []rune(fullText),
-		lines:        []string{""},
-		ascii:        ascii,
-		asciiOpacity: 0.0,
+		fullRunes: []rune(fullText),
+		lines:     []string{""},
+		ascii:     ascii,
+		theme:     theme,
 	}
 }
 
@@ -54,13 +59,17 @@ func (m introModel) Init() tea.Cmd {
 }
 
 func tick() tea.Cmd {
-	return tea.Tick(35*time.Millisecond, func(t time.Time) tea.Msg {
+	return tea.Tick(30*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg{}
 	})
 }
 
 func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		return m, nil
 
 	case tickMsg:
 		if m.pos < len(m.fullRunes) {
@@ -84,54 +93,136 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.done = true
 			if len(m.ascii) > 0 {
 				m.showASCII = true
-				return m, tick()
 			}
 			return m, nil
-		}
-
-		if m.showASCII && m.asciiOpacity < 1.0 {
-			m.asciiOpacity += 0.1
-			if m.asciiOpacity > 1.0 {
-				m.asciiOpacity = 1.0
-			}
-			return m, tick()
 		}
 
 		return m, nil
 
 	case tea.KeyMsg:
-		if m.done {
-			return m, func() tea.Msg { return goToMenuMsg{} }
+		// Allow skipping animation or continuing when done
+		if msg.String() == "ctrl+c" {
+			return m, tea.Quit
 		}
+
+		// Skip animation or go to menu
+		if !m.done {
+			// Complete the animation instantly
+			m.lines = []string{string(m.fullRunes)}
+			m.pos = len(m.fullRunes)
+			m.done = true
+			if len(m.ascii) > 0 {
+				m.showASCII = true
+			}
+			return m, nil
+		}
+
+		// If already done, go to menu
+		return m, func() tea.Msg { return goToMenuMsg{} }
 	}
 
 	return m, nil
 }
 
 func (m introModel) View() string {
-	s := ""
-
-	for i := 0; i < len(m.lines); i++ {
-		if i > 0 {
-			s += "\n"
-		}
-		s += m.lines[i]
+	if m.width == 0 {
+		return "Loading..."
 	}
 
-	if m.showASCII {
-		for i := 0; i < m.asciiIndex && i < len(m.ascii); i++ {
-			s += m.ascii[i] + "\n"
-		}
+	var sections []string
+
+	// Header
+	header := components.HeaderBox("WELCOME", m.theme, m.width-4)
+	sections = append(sections, header)
+
+	// Animated intro text
+	introContent := m.renderIntroText()
+	sections = append(sections, introContent)
+
+	// ASCII art if available
+	if m.showASCII && len(m.ascii) > 0 {
+		asciiArt := m.renderASCII()
+		sections = append(sections, asciiArt)
 	}
 
+	// Prompt when done
 	if m.done {
+		sections = append(sections, components.DividerLine(m.theme, m.width-4, "─"))
+
 		prompt := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFD700")).
+			Foreground(m.theme.Accent).
 			Bold(true).
-			Padding(1, 0).
-			Render("\nPress any key to continue...")
-		s += prompt
+			Align(lipgloss.Center).
+			Width(m.width).
+			Render("✨ Press any key to continue ✨")
+		sections = append(sections, prompt)
+
+		keyBindings := []components.KeyBind{
+			{Key: "Any Key", Desc: "Enter Portfolio"},
+			{Key: "Ctrl+C", Desc: "Exit"},
+		}
+		footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
+		sections = append(sections, footer)
 	}
 
-	return s
+	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
+
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		content,
+	)
+}
+
+func (m introModel) renderIntroText() string {
+	// Join all lines into a single text
+	text := strings.Join(m.lines, "\n")
+
+	textStyle := lipgloss.NewStyle().
+		Foreground(m.theme.Primary).
+		Width(m.width-16).
+		Align(lipgloss.Left).
+		Padding(1, 2)
+
+	highlightStyle := lipgloss.NewStyle().
+		Foreground(m.theme.Accent).
+		Bold(true)
+
+	// Highlight name and key phrases
+	text = strings.ReplaceAll(text, "Janpol Hidalgo", highlightStyle.Render("Janpol Hidalgo"))
+
+	styledText := textStyle.Render(text)
+
+	cardStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(m.theme.Primary).
+		Padding(1, 2).
+		Width(m.width - 8)
+
+	card := cardStyle.Render(styledText)
+
+	return lipgloss.PlaceHorizontal(
+		m.width,
+		lipgloss.Center,
+		card,
+	)
+}
+
+func (m introModel) renderASCII() string {
+	asciiContent := strings.Join(m.ascii, "\n")
+
+	asciiStyle := lipgloss.NewStyle().
+		Foreground(m.theme.Accent).
+		Align(lipgloss.Center).
+		Width(m.width - 16)
+
+	styledASCII := asciiStyle.Render(asciiContent)
+
+	return lipgloss.PlaceHorizontal(
+		m.width,
+		lipgloss.Center,
+		components.SectionBox("", styledASCII, m.theme, m.width-8),
+	)
 }
