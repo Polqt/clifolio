@@ -7,40 +7,50 @@ type Theme struct {
 	Primary    lipgloss.TerminalColor
 	Secondary  lipgloss.TerminalColor
 	Accent     lipgloss.TerminalColor
-	Help 	   lipgloss.TerminalColor
-	Error	   lipgloss.TerminalColor
+	Help       lipgloss.TerminalColor
+	Error      lipgloss.TerminalColor
 	Title      lipgloss.Style
 	Label      lipgloss.Style
 }
 
 func NewThemeFromName(name string) Theme {
 	switch name {
+	case "warrior":
+		return Theme{
+			Background: lipgloss.Color("#0f0f0f"),
+			Primary:    lipgloss.Color("#dc322f"), // Blood red for titles
+			Secondary:  lipgloss.Color("#93a1a1"), // Steel gray for secondary text
+			Accent:     lipgloss.Color("#2aa198"), // Cyan for stats/skills
+			Help:       lipgloss.Color("#586e75"), // Muted gray for help
+			Error:      lipgloss.Color("#b58900"), // Yellow for warnings
+		}
 	case "hacker":
 		return Theme{
 			Background: lipgloss.Color("#0f0f0f"),
-			Primary: lipgloss.Color("#00ff00"),
-			Secondary: lipgloss.Color("#007700"),
-			Accent: lipgloss.Color("#33ff99"),
-			Help: lipgloss.Color("#626262"),
-			Error: lipgloss.Color("#FF0000"),
+			Primary:    lipgloss.Color("#00ff00"),
+			Secondary:  lipgloss.Color("#007700"),
+			Accent:     lipgloss.Color("#33ff99"),
+			Help:       lipgloss.Color("#626262"),
+			Error:      lipgloss.Color("#FF0000"),
 		}
 	case "dracula":
 		return Theme{
 			Background: lipgloss.Color("#282a36"),
-			Primary: lipgloss.Color("#ff79c6"),
-			Secondary: lipgloss.Color("#6272a4"),
-			Accent: lipgloss.Color("#8be9fd"),
-			Help: lipgloss.Color("#626262"),
-			Error: lipgloss.Color("#FF0000"),
+			Primary:    lipgloss.Color("#ff79c6"),
+			Secondary:  lipgloss.Color("#6272a4"),
+			Accent:     lipgloss.Color("#8be9fd"),
+			Help:       lipgloss.Color("#626262"),
+			Error:      lipgloss.Color("#FF0000"),
 		}
 	default:
+		// Default is now warrior theme
 		return Theme{
-			Background: lipgloss.Color("#002b36"),
-			Primary: lipgloss.Color("#b58900"),
-			Secondary: lipgloss.Color("#586e75"),
-			Accent: lipgloss.Color("#2aa198"),
-			Help: lipgloss.Color("#626262"),
-			Error: lipgloss.Color("#FF0000"),
+			Background: lipgloss.Color("#0f0f0f"),
+			Primary:    lipgloss.Color("#dc322f"), // Blood red for titles
+			Secondary:  lipgloss.Color("#93a1a1"), // Steel gray for secondary text
+			Accent:     lipgloss.Color("#2aa198"), // Cyan for stats/skills
+			Help:       lipgloss.Color("#586e75"), // Muted gray for help
+			Error:      lipgloss.Color("#b58900"), // Yellow for warnings
 		}
 	}
 }
