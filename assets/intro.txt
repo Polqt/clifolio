@@ -1,8 +1,17 @@
-Hi, I'm Janpol Hidalgo,
-Like most devs, it started with curiosity.
-One moment I was just clicking stuff,
-next thing I know I’m knee-deep in console logs and late-night
-"why isn't this working?!" breakdowns 😭.
-Still on the grind, always learning,
-and lowkey building my own multiverse of apps one bug at a time.
-Not perfect, but built diff.
+Greetings, Traveler.
+
+You have encountered Janpol Hidalgo, the Dev-Warrior.
+
+Like all warriors, my journey began with a simple quest—
+curiosity led me through the terminal gates.
+What started as exploration became a calling.
+
+Now I traverse digital realms, wielding code as my weapon,
+debugging as my battle strategy,
+and every project a new conquest.
+
+Still forging my path, sharpening my skills,
+building kingdoms of applications one line at a time.
+
+Not perfect. But battle-tested.
+Ready to embark on the next quest?
