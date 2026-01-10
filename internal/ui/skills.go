@@ -81,11 +81,11 @@ func NewSkillsModel(theme styles.Theme) *skillsModel {
 
 	skills := []Skill{
 		// Frontend
-		{Name: "React", Level: 5, Category: "frontend", Years: 3, Icon: "⚛️", Projects: 20, Color: lipgloss.Color("#61DAFB")},
+		{Name: "React", Level: 5, Category: "frontend", Years: 3, Icon: "⚡", Projects: 20, Color: lipgloss.Color("#61DAFB")},
 		{Name: "TypeScript", Level: 4, Category: "frontend", Years: 3, Icon: "🔷", Projects: 25, Color: lipgloss.Color("#3178C6")},
-		{Name: "JavaScript", Level: 5, Category: "frontend", Years: 4, Icon: "🟨", Projects: 30, Color: lipgloss.Color("#F7DF1E")},
+		{Name: "JavaScript", Level: 5, Category: "frontend", Years: 4, Icon: "💛", Projects: 30, Color: lipgloss.Color("#F7DF1E")},
 		{Name: "Next.js", Level: 4, Category: "frontend", Years: 2, Icon: "▲", Projects: 15, Color: lipgloss.Color("#FFFFFF")},
-		{Name: "TailwindCSS", Level: 5, Category: "frontend", Years: 2, Icon: "🎨", Projects: 18, Color: lipgloss.Color("#06B6D4")},
+		{Name: "TailwindCSS", Level: 5, Category: "frontend", Years: 2, Icon: "🎯", Projects: 18, Color: lipgloss.Color("#06B6D4")},
 		{Name: "HTML/CSS", Level: 5, Category: "frontend", Years: 4, Icon: "🌐", Projects: 35, Color: lipgloss.Color("#E34F26")},
 
 		// Backend
@@ -105,7 +105,7 @@ func NewSkillsModel(theme styles.Theme) *skillsModel {
 		{Name: "Git", Level: 5, Category: "devops", Years: 4, Icon: "🔧", Projects: 50, Color: lipgloss.Color("#F05032")},
 		{Name: "GitHub Actions", Level: 4, Category: "devops", Years: 2, Icon: "⚡", Projects: 10, Color: lipgloss.Color("#2088FF")},
 		{Name: "Linux", Level: 4, Category: "devops", Years: 3, Icon: "🐧", Projects: 20, Color: lipgloss.Color("#FCC624")},
-		{Name: "AWS", Level: 3, Category: "devops", Years: 1, Icon: "☁️", Projects: 6, Color: lipgloss.Color("#FF9900")},
+		{Name: "AWS", Level: 3, Category: "devops", Years: 1, Icon: "🌐", Projects: 6, Color: lipgloss.Color("#FF9900")},
 
 		// Database
 		{Name: "PostgreSQL", Level: 4, Category: "database", Years: 3, Icon: "🐘", Projects: 15, Color: lipgloss.Color("#336791")},
@@ -337,15 +337,18 @@ func (m *skillsModel) renderSkillsCompactGrid() string {
 		return emptyStyle.Render("No skills in this category yet")
 	}
 
-	// Calculate how many columns we can fit
-	cardWidth := 28
-	cols := (m.width - 16) / (cardWidth + 2)
-	if cols < 2 {
+	// Calculate optimal columns based on available width
+	availableWidth := m.width - 24 // Account for margins and padding
+	cols := 4
+	if availableWidth < 120 {
 		cols = 2
+	} else if availableWidth < 160 {
+		cols = 3
 	}
-	if cols > 4 {
-		cols = 4
-	}
+
+	// Calculate card width to fill the space evenly
+	margin := 4 // Total horizontal margin between cards
+	cardWidth := (availableWidth - (margin * (cols - 1))) / cols
 
 	var rows []string
 	var currentRow []string
@@ -355,17 +358,19 @@ func (m *skillsModel) renderSkillsCompactGrid() string {
 		currentRow = append(currentRow, card)
 
 		if len(currentRow) == cols {
-			rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))
+			row := lipgloss.JoinHorizontal(lipgloss.Top, currentRow...)
+			rows = append(rows, lipgloss.PlaceHorizontal(m.width-8, lipgloss.Center, row))
 			currentRow = []string{}
 		}
 	}
 
 	// Add remaining cards
 	if len(currentRow) > 0 {
-		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))
+		row := lipgloss.JoinHorizontal(lipgloss.Top, currentRow...)
+		rows = append(rows, lipgloss.PlaceHorizontal(m.width-8, lipgloss.Center, row))
 	}
 
-	grid := lipgloss.JoinVertical(lipgloss.Left, rows...)
+	grid := lipgloss.JoinVertical(lipgloss.Center, rows...)
 
 	return lipgloss.PlaceHorizontal(
 		m.width,
@@ -375,38 +380,26 @@ func (m *skillsModel) renderSkillsCompactGrid() string {
 }
 
 func (m *skillsModel) renderSkillCard(skill Skill, width int) string {
-	// Icon and name
+	// Icon with larger size
 	iconStyle := lipgloss.NewStyle().
 		Foreground(skill.Color).
 		Bold(true).
 		Width(width - 4).
 		Align(lipgloss.Center)
 
+	// Bigger title with more presence
 	titleStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Primary).
 		Bold(true).
 		Width(width - 4).
 		Align(lipgloss.Center)
 
-	// Level bar
-	levelBar := m.renderLevelBar(skill.Level)
-	levelStyle := lipgloss.NewStyle().
-		Width(width - 4).
-		Align(lipgloss.Center)
-
-	// Metadata
-	metaText := fmt.Sprintf("%d years • %d projects", skill.Years, skill.Projects)
-	metaStyle := lipgloss.NewStyle().
-		Foreground(m.theme.Secondary).
-		Width(width - 4).
-		Align(lipgloss.Center)
-
+	// Add spacing for better fill
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
 		iconStyle.Render(skill.Icon),
+		"", // Empty line for spacing
 		titleStyle.Render(skill.Name),
-		levelStyle.Render(levelBar),
-		metaStyle.Render(metaText),
 	)
 
 	cardStyle := lipgloss.NewStyle().
@@ -414,6 +407,7 @@ func (m *skillsModel) renderSkillCard(skill Skill, width int) string {
 		BorderForeground(m.theme.Secondary).
 		Padding(1).
 		Width(width).
+		Height(8). // Reduced height to fit more on screen
 		Margin(0, 1, 1, 0)
 
 	return cardStyle.Render(content)
