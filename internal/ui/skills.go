@@ -50,7 +50,7 @@ func NewSkillsModel(theme styles.Theme) *skillsModel {
 		{
 			ID:          "backend",
 			DisplayName: "Backend",
-			Icon:        "⚙️",
+			Icon:        "⚙",
 			Description: "Server-side & APIs",
 		},
 		{
@@ -68,7 +68,7 @@ func NewSkillsModel(theme styles.Theme) *skillsModel {
 		{
 			ID:          "database",
 			DisplayName: "Database",
-			Icon:        "🗄️",
+			Icon:        "🗄",
 			Description: "Data storage & management",
 		},
 		{
