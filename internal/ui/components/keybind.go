@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 )
 
 type KeyBind struct {
@@ -30,15 +31,34 @@ func RenderKeyBindings(bindings []KeyBind, theme styles.Theme, width int) string
 
 	content := strings.Join(hints, "  •  ")
 
-	return lipgloss.NewStyle().
-		Width(width).
-		Align(lipgloss.Center).
-		Foreground(theme.Secondary).
-		BorderTop(true).
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(theme.Secondary).
-		Padding(1, 0).
-		Render(content)
+	// Add warrior-themed decorative border
+	borderStyle := lipgloss.NewStyle().
+		Foreground(theme.Primary)
+
+	// Create a full-width line with centered COMMANDS text
+	commandLabel := " ⚔️  COMMANDS ⚔️  "
+	labelWidth := runewidth.StringWidth(commandLabel) // Calculate actual visual width
+	remainingWidth := width - labelWidth
+	if remainingWidth < 0 {
+		remainingWidth = 0
+	}
+	leftPad := remainingWidth / 2
+	rightPad := remainingWidth - leftPad
+
+	topLine := strings.Repeat("━", leftPad) + commandLabel + strings.Repeat("━", rightPad)
+
+	footerContent := lipgloss.JoinVertical(
+		lipgloss.Left,
+		borderStyle.Render(topLine),
+		lipgloss.NewStyle().
+			Width(width).
+			Align(lipgloss.Center).
+			Foreground(theme.Secondary).
+			Padding(1, 0).
+			Render(content),
+	)
+
+	return footerContent
 }
 
 func RenderHelpMenu(sections map[string][]KeyBind, theme styles.Theme) string {

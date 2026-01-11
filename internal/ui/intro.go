@@ -132,8 +132,10 @@ func (m introModel) View() string {
 	var sections []string
 
 	// Header
-	header := components.HeaderBox("WELCOME", m.theme, m.width-4)
+	header := components.HeaderBox("WARRIOR AWAKENS", m.theme, m.width-8)
+	sections = append(sections, "")
 	sections = append(sections, header)
+	sections = append(sections, "")
 
 	// Animated intro text
 	introContent := m.renderIntroText()
@@ -147,19 +149,21 @@ func (m introModel) View() string {
 
 	// Prompt when done
 	if m.done {
-		sections = append(sections, components.DividerLine(m.theme, m.width-4, "─"))
+		sections = append(sections, "")
+		sections = append(sections, components.DividerLine(m.theme, m.width-8, "─"))
+		sections = append(sections, "")
 
 		prompt := lipgloss.NewStyle().
 			Foreground(m.theme.Accent).
 			Bold(true).
 			Align(lipgloss.Center).
-			Width(m.width).
-			Render("✨ Press any key to continue ✨")
-		sections = append(sections, prompt)
+			Width(m.width - 8).
+			Render("⚡ Press any key to enter the realm ⚡")
+		sections = append(sections, lipgloss.PlaceHorizontal(m.width, lipgloss.Center, prompt))
 
 		keyBindings := []components.KeyBind{
-			{Key: "Any Key", Desc: "Enter Portfolio"},
-			{Key: "Ctrl+C", Desc: "Exit"},
+			{Key: "Any Key", Desc: "Begin Quest"},
+			{Key: "Ctrl+C", Desc: "Retreat"},
 		}
 		footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
 		sections = append(sections, footer)
@@ -182,9 +186,7 @@ func (m introModel) renderIntroText() string {
 
 	textStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Primary).
-		Width(m.width-16).
-		Align(lipgloss.Left).
-		Padding(1, 2)
+		Align(lipgloss.Left)
 
 	highlightStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Accent).
@@ -195,18 +197,13 @@ func (m introModel) renderIntroText() string {
 
 	styledText := textStyle.Render(text)
 
-	cardStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(m.theme.Primary).
-		Padding(1, 2).
-		Width(m.width - 8)
-
-	card := cardStyle.Render(styledText)
+	// Use SectionBox for consistent warrior theme
+	box := components.SectionBox("", styledText, m.theme, m.width-8)
 
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Center,
-		card,
+		box,
 	)
 }
 

@@ -1,17 +1,16 @@
-Greetings, Traveler.
+    Greetings, Traveler.
 
-You have encountered Janpol Hidalgo, the Dev-Warrior.
+    You have encountered Janpol Hidalgo, the Dev-Warrior.
 
-Like all warriors, my journey began with a simple quest—
-curiosity led me through the terminal gates.
-What started as exploration became a calling.
+    My journey started with curiosity and a terminal window.
+    What began as small experiments slowly turned into real quests.
 
-Now I traverse digital realms, wielding code as my weapon,
-debugging as my battle strategy,
-and every project a new conquest.
+    I explore digital worlds using code as my main tool,
+    solving problems, fixing bugs, and building projects along the way.
+    Each project is a new challenge, and each mistake helps me level up.
 
-Still forging my path, sharpening my skills,
-building kingdoms of applications one line at a time.
+    I’m still learning, still improving, and still on my path.
+    Not a max-level hero yet—but gaining experience every day.
 
-Not perfect. But battle-tested.
-Ready to embark on the next quest?
+
+    Press Any Key to begin your quest

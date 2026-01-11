@@ -2,8 +2,10 @@ package components
 
 import (
 	"clifolio/internal/styles"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 )
 
 type BorderStyle int
@@ -56,23 +58,40 @@ func GlowBorder(theme styles.Theme) lipgloss.Style {
 func SectionBox(title, content string, theme styles.Theme, width int) string {
 	titleStyle := lipgloss.NewStyle().
 		Foreground(theme.Primary).
-		Bold(true).
-		Padding(0, 1).
-		Background(theme.Background)
-	
+		Bold(true)
+
+	// Scroll-like box with decorative borders
 	boxStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
+		Border(lipgloss.Border{
+			Top:         "═",
+			Bottom:      "═",
+			Left:        "║",
+			Right:       "║",
+			TopLeft:     "╭",
+			TopRight:    "╮",
+			BottomLeft:  "╰",
+			BottomRight: "╯",
+		}).
 		BorderForeground(theme.Primary).
 		Padding(1, 2).
 		Width(width)
-	
-	titleBar := titleStyle.Render("┤ " + title + " ├")
+	// Warrior-themed title bar with scroll decorations
+	var titleBar string
+	if title != "" {
+		titleText := "━━━► " + title + " ◄━━━"
+		titleBar = lipgloss.PlaceHorizontal(width, lipgloss.Center, titleStyle.Render(titleText))
+	} else {
+		titleBar = ""
+	}
 
-	return lipgloss.JoinVertical(
-		lipgloss.Left,
-		titleBar,
-		boxStyle.Render(content),
-	)
+	if titleBar != "" {
+		return lipgloss.JoinVertical(
+			lipgloss.Left,
+			titleBar,
+			boxStyle.Render(content),
+		)
+	}
+	return boxStyle.Render(content)
 }
 
 func CardBox(content string, theme styles.Theme, selected bool) string {
@@ -80,7 +99,7 @@ func CardBox(content string, theme styles.Theme, selected bool) string {
 		Border(lipgloss.RoundedBorder()).
 		Padding(1, 2).
 		MarginBottom(1)
-	
+
 	if selected {
 		style = style.
 			BorderForeground(theme.Accent).
@@ -99,10 +118,10 @@ func InfoPanel(label, value string, theme styles.Theme) string {
 		Bold(true).
 		Width(15).
 		Align(lipgloss.Right)
-	
+
 	valueStyle := lipgloss.NewStyle().
 		Foreground(theme.Primary)
-	
+
 	return lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		labelStyle.Render(label+":"),
@@ -112,22 +131,45 @@ func InfoPanel(label, value string, theme styles.Theme) string {
 }
 
 func HeaderBox(title string, theme styles.Theme, width int) string {
-	style := lipgloss.NewStyle().
-		Foreground(theme.Accent).
-		Bold(true).
-		Align(lipgloss.Center).
-		Width(width - 4)
-	
 	borderStyle := lipgloss.NewStyle().
 		Foreground(theme.Primary)
-	
-	topBorder := borderStyle.Render("╔" + lipgloss.PlaceHorizontal(width-2, lipgloss.Center, "═") + "╗")
-	bottomBorder := borderStyle.Render("╚" + lipgloss.PlaceHorizontal(width-2, lipgloss.Center, "═") + "╝")
+
+	titleStyle := lipgloss.NewStyle().
+		Foreground(theme.Accent).
+		Bold(true)
+
+	// Scroll-like decorative top border
+	topBorder := borderStyle.Render("┌" + strings.Repeat("═", width-2) + "┐")
+
+	// Title line with scroll decorations
+	swordDecor := "⚔️"
+	titleText := "  " + title + "  "
+
+	// Calculate visual width using runewidth to account for emojis
+	swordWidth := runewidth.StringWidth(swordDecor) 
+	titleTextWidth := runewidth.StringWidth(titleText)
+	titleVisualWidth := swordWidth + titleTextWidth + swordWidth
+	contentWidth := width - 2 // Subtract borders
+
+	// Calculate padding
+	padding := contentWidth - titleVisualWidth
+	if padding < 0 {
+		padding = 0
+	}
+	leftPad := padding / 2
+	rightPad := padding - leftPad
+
+	// Build the title line
+	titleLine := strings.Repeat(" ", leftPad) + swordDecor + titleText + swordDecor + strings.Repeat(" ", rightPad)
+	middleLine := borderStyle.Render("│") + titleStyle.Render(titleLine) + borderStyle.Render("│")
+
+	// Scroll-like decorative bottom border
+	bottomBorder := borderStyle.Render("└" + strings.Repeat("═", width-2) + "┘")
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		topBorder,
-		"║ " + style.Render(title) +" ║",
+		middleLine,
 		bottomBorder,
 	)
 }
@@ -149,20 +191,75 @@ func DividerLine(theme styles.Theme, width int, char string) string {
 	}
 
 	style := lipgloss.NewStyle().
-		Foreground(theme.Secondary).
-		Width(width)
-	
-	line := ""
-	for i := 0; i < width; i++ {
-		line += char
+		Foreground(theme.Secondary)
+
+	swordDecor := " ⚔️   "
+	swordVisualWidth := runewidth.StringWidth(swordDecor)
+
+	// Ensure we have enough width for the sword decoration
+	if width < swordVisualWidth {
+		return style.Render(strings.Repeat(char, width))
 	}
+
+	remainingWidth := width - swordVisualWidth
+	sideLength := remainingWidth / 2
+	rightSideLength := remainingWidth - sideLength // Handle odd widths
+
+	leftSide := strings.Repeat(char, sideLength)
+	rightSide := strings.Repeat(char, rightSideLength)
+
+	line := leftSide + swordDecor + rightSide
 
 	return style.Render(line)
 }
 
-func GradientBorder(theme styles.Theme, topColor, bottomColor lipgloss.Color) lipgloss.Style {
-	return lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(topColor).
-		Padding(1, 2)
+// WarriorStatusBar creates an HP/MP style bar for warrior theme
+func WarriorStatusBar(label string, current, max int, theme styles.Theme, width int) string {
+	barWidth := width - len(label) - 15 // Space for label and stats
+	if barWidth < 10 {
+		barWidth = 10
+	}
+
+	percentage := float64(current) / float64(max)
+	filled := int(percentage * float64(barWidth))
+	if filled > barWidth {
+		filled = barWidth
+	}
+
+	filledBar := strings.Repeat("█", filled)
+	emptyBar := strings.Repeat("░", barWidth-filled)
+
+	barStyle := lipgloss.NewStyle().Foreground(theme.Accent)
+	emptyStyle := lipgloss.NewStyle().Foreground(theme.Secondary)
+	labelStyle := lipgloss.NewStyle().Foreground(theme.Primary).Bold(true)
+	statsStyle := lipgloss.NewStyle().Foreground(theme.Secondary)
+
+	return labelStyle.Render(label) + " [" +
+		barStyle.Render(filledBar) + emptyStyle.Render(emptyBar) +
+		"] " + statsStyle.Render(lipgloss.NewStyle().Render(string(rune(current)))+"/"+string(rune(max)))
+}
+
+// WarriorBox creates a warrior-themed decorated box
+func WarriorBox(content string, theme styles.Theme, width int) string {
+	borderStyle := lipgloss.NewStyle().
+		Border(lipgloss.Border{
+			Top:         "═",
+			Bottom:      "═",
+			Left:        "║",
+			Right:       "║",
+			TopLeft:     "╔",
+			TopRight:    "╗",
+			BottomLeft:  "╚",
+			BottomRight: "╝",
+		}).
+		BorderForeground(theme.Primary).
+		Padding(1, 2).
+		Width(width)
+
+	return borderStyle.Render(content)
+}
+
+func PixelDecoration(theme styles.Theme) string {
+	decorStyle := lipgloss.NewStyle().Foreground(theme.Primary)
+	return decorStyle.Render("▓▒░")
 }
