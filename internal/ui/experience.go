@@ -12,7 +12,7 @@ import (
 )
 
 type Experience struct {
-	Type         string // "work", "education", "certification"
+	Type         string
 	Title        string
 	Organization string
 	Location     string
@@ -30,7 +30,7 @@ type experienceModel struct {
 	width       int
 	height      int
 	keymap      components.Keymap
-	viewType    string // "timeline", "detailed"
+	viewType    string
 }
 
 func NewExperienceModel(theme styles.Theme) *experienceModel {
@@ -54,31 +54,16 @@ func NewExperienceModel(theme styles.Theme) *experienceModel {
 		{
 			Type:         "education",
 			Title:        "Bachelor of Science in Computer Science",
-			Organization: "Your University",
+			Organization: "University of St. La Salle - Bacolod",
 			Location:     "Philippines",
-			StartDate:    "2020",
-			EndDate:      "2024",
+			StartDate:    "August 2022",
+			EndDate:      "April 2026",
 			Description: []string{
-				"Focused on software engineering and full-stack development",
+				"Focused on game development, data structures and algorithms, and artificial intelligence",
 				"Dean's List recipient for academic excellence",
-				"Led student tech community initiatives",
 			},
-			Skills: []string{"Algorithms", "Data Structures", "Software Engineering"},
+			Skills: []string{"Algorithms", "Data Structures", "Game Development", "AI", "ML", "Data Science"},
 			Icon:   "🎓",
-		},
-		{
-			Type:         "certification",
-			Title:        "AWS Certified Developer",
-			Organization: "Amazon Web Services",
-			Location:     "Online",
-			StartDate:    "2024",
-			EndDate:      "2024",
-			Description: []string{
-				"Certified in cloud development and deployment",
-				"Expertise in serverless architectures and microservices",
-			},
-			Skills: []string{"AWS", "Cloud Computing", "DevOps"},
-			Icon:   "📜",
 		},
 	}
 
@@ -90,7 +75,6 @@ func NewExperienceModel(theme styles.Theme) *experienceModel {
 	}
 }
 
-// ExperienceModel creates a new experience screen with default theme
 func ExperienceModel() tea.Model {
 	theme := styles.NewThemeFromName("default")
 	return NewExperienceModel(theme)
@@ -109,21 +93,28 @@ func (m *experienceModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case m.keymap.Up, "k":
+		case m.keymap.Up, "up":
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case m.keymap.Down, "j":
+		case m.keymap.Down, "down":
 			if m.cursor < len(m.experiences)-1 {
 				m.cursor++
 			}
-		case "v":
+		case m.keymap.Confirm:
 			if m.viewType == "timeline" {
 				m.viewType = "detailed"
 			} else {
 				m.viewType = "timeline"
 			}
 		case m.keymap.Back, "esc", "b":
+			// If in detailed view, go back to timeline first
+			if m.viewType == "detailed" {
+				m.viewType = "timeline"
+				return m, nil
+			}
+			// Otherwise go back to menu
+			m.cursor = 0
 			return m, func() tea.Msg {
 				return state.ScreenMenu
 			}
@@ -143,15 +134,15 @@ func (m *experienceModel) View() string {
 	var sections []string
 
 	// Header
-	header := components.HeaderBox("EXPERIENCE & EDUCATION", m.theme, m.width-4)
+	header := components.HeaderBox("COMBAT HISTORY & TRAINING", m.theme, m.width-4)
 	sections = append(sections, header)
 
-	// Stats
-	stats := m.renderStats()
-	sections = append(sections, stats)
-
-	// Divider
-	sections = append(sections, components.DividerLine(m.theme, m.width-4, "─"))
+	// Stats - only show in timeline view to save space
+	if m.viewType == "timeline" {
+		stats := m.renderStats()
+		sections = append(sections, stats)
+		sections = append(sections, components.DividerLine(m.theme, m.width-4, "─"))
+	}
 
 	// Experience content
 	if m.viewType == "timeline" {
@@ -163,9 +154,9 @@ func (m *experienceModel) View() string {
 	// Key bindings
 	keyBindings := []components.KeyBind{
 		{Key: "↑↓/k/j", Desc: "Navigate"},
-		{Key: "v", Desc: "Toggle View"},
-		{Key: "b/Esc", Desc: "Back"},
-		{Key: "q", Desc: "Quit"},
+		{Key: "enter", Desc: "Toggle View"},
+		{Key: "b/esc", Desc: "Retreat"},
+		{Key: "q", Desc: "Exit Realm"},
 	}
 	footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
 	sections = append(sections, footer)
@@ -223,100 +214,108 @@ func (m *experienceModel) renderStats() string {
 }
 
 func (m *experienceModel) renderTimeline() string {
-	var timeline strings.Builder
-
-	connectorStyle := lipgloss.NewStyle().Foreground(m.theme.Secondary)
-	dotStyle := lipgloss.NewStyle().Foreground(m.theme.Accent).Bold(true)
-	selectedDotStyle := lipgloss.NewStyle().Foreground(m.theme.Accent).Bold(true)
+	var cards []string
 
 	for i, exp := range m.experiences {
 		isSelected := i == m.cursor
 
-		// Timeline connector
-		var dot string
-		if isSelected {
-			dot = selectedDotStyle.Render("●")
-		} else {
-			dot = dotStyle.Render("○")
-		}
+		headerStyle := lipgloss.NewStyle().
+			Foreground(m.theme.Accent).
+			Bold(true).
+			PaddingBottom(1)
 
-		// Date range
-		dateStyle := lipgloss.NewStyle().
-			Foreground(m.theme.Secondary).
-			Width(20)
-		dateRange := fmt.Sprintf("%s - %s", exp.StartDate, exp.EndDate)
-
-		// Content
-		titleStyle := lipgloss.NewStyle().
-			Foreground(m.theme.Primary).
-			Bold(true)
+		cardHeader := headerStyle.Render(exp.Icon + "  " + exp.Title)
 
 		orgStyle := lipgloss.NewStyle().
-			Foreground(m.theme.Accent)
+			Foreground(m.theme.Primary).
+			Bold(true)
 
 		locationStyle := lipgloss.NewStyle().
 			Foreground(m.theme.Secondary).
 			Italic(true)
 
-		content := fmt.Sprintf("%s %s\n%s %s\n%s %s",
-			exp.Icon,
-			titleStyle.Render(exp.Title),
-			"at",
-			orgStyle.Render(exp.Organization),
-			"📍",
-			locationStyle.Render(exp.Location),
-		)
+		dateStyle := lipgloss.NewStyle().
+			Foreground(m.theme.Secondary).
+			Italic(true)
 
-		// Skills
+		orgLine := orgStyle.Render(exp.Organization)
+		locationLine := locationStyle.Render(exp.Location)
+		dateRange := dateStyle.Render(exp.StartDate + " → " + exp.EndDate)
+
+		var descPreview string
+		if len(exp.Description) > 0 {
+			descStyle := lipgloss.NewStyle().
+				Foreground(m.theme.Secondary).
+				PaddingTop(1).
+				Italic(true)
+
+			desc := exp.Description[0]
+			if len(desc) > 60 {
+				desc = desc[:57] + "..."
+			}
+			descPreview = descStyle.Render("" + desc)
+		}
+
+		// Skills badges
+		var skillsLine string
 		if len(exp.Skills) > 0 {
 			skillStyle := lipgloss.NewStyle().
-				Foreground(m.theme.Accent).
-				Background(lipgloss.Color("#1a1a1a")).
+				Foreground(m.theme.Background).
+				Background(m.theme.Accent).
 				Padding(0, 1).
-				MarginRight(1)
+				MarginRight(1).
+				Bold(true)
 
 			var skillBadges []string
 			for _, skill := range exp.Skills {
 				skillBadges = append(skillBadges, skillStyle.Render(skill))
 			}
-			content += "\n" + strings.Join(skillBadges, " ")
+			skillsLine = "\n" + strings.Join(skillBadges, " ")
 		}
 
-		// Build timeline entry
-		var entry string
+		// Build card content
+		cardContent := lipgloss.JoinVertical(
+			lipgloss.Left,
+			cardHeader,
+			orgLine,
+			locationLine,
+			dateRange,
+			descPreview,
+			skillsLine,
+		)
+
+		// Apply card styling
+		var card string
 		if isSelected {
-			entry = components.AccentBorder(m.theme).Render(
-				lipgloss.JoinHorizontal(
-					lipgloss.Top,
-					dateStyle.Render(dateRange),
-					" "+dot+" ",
-					content,
-				),
-			)
+			cardStyle := lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(m.theme.Accent).
+				Padding(1, 2).
+				MarginBottom(1).
+				Width(m.width - 20).
+				BorderStyle(lipgloss.ThickBorder())
+
+			card = cardStyle.Render(cardContent)
 		} else {
-			entry = components.SubtleBorder(m.theme).Render(
-				lipgloss.JoinHorizontal(
-					lipgloss.Top,
-					dateStyle.Render(dateRange),
-					" "+dot+" ",
-					content,
-				),
-			)
+			cardStyle := lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(m.theme.Secondary).
+				Padding(1, 2).
+				MarginBottom(1).
+				Width(m.width - 20)
+
+			card = cardStyle.Render(cardContent)
 		}
 
-		timeline.WriteString(entry + "\n")
-
-		// Connector line
-		if i < len(m.experiences)-1 {
-			connector := connectorStyle.Render("     │")
-			timeline.WriteString(connector + "\n")
-		}
+		cards = append(cards, card)
 	}
+
+	allCards := lipgloss.JoinVertical(lipgloss.Left, cards...)
 
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Center,
-		timeline.String(),
+		allCards,
 	)
 }
 
@@ -327,62 +326,91 @@ func (m *experienceModel) renderDetailed() string {
 
 	exp := m.experiences[m.cursor]
 
-	var details strings.Builder
+	var sections []string
 
 	// Title section
 	titleStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Accent).
-		Bold(true)
+		Bold(true).
+		Underline(true)
 
-	details.WriteString(titleStyle.Render(exp.Icon+" "+exp.Title) + "\n\n")
+	titleSection := titleStyle.Render(exp.Icon + "  " + exp.Title)
+	sections = append(sections, titleSection)
+	sections = append(sections, "")
 
-	// Info panels
-	details.WriteString(components.InfoPanel("Organization", exp.Organization, m.theme) + "\n")
-	details.WriteString(components.InfoPanel("Location", exp.Location, m.theme) + "\n")
-	details.WriteString(components.InfoPanel("Period", exp.StartDate+" - "+exp.EndDate, m.theme) + "\n")
-	details.WriteString(components.InfoPanel("Type", strings.Title(exp.Type), m.theme) + "\n\n")
+	// Info in clean aligned format
+	labelStyle := lipgloss.NewStyle().
+		Foreground(m.theme.Secondary).
+		Width(10).
+		Align(lipgloss.Right)
 
-	// Description
+	valueStyle := lipgloss.NewStyle().
+		Foreground(m.theme.Primary)
+
+	orgLine := lipgloss.JoinHorizontal(lipgloss.Left,
+		labelStyle.Render("Company:"),
+		"  ",
+		valueStyle.Render(exp.Organization))
+	locationLine := lipgloss.JoinHorizontal(lipgloss.Left,
+		labelStyle.Render("Location:"),
+		"  ",
+		valueStyle.Render(exp.Location))
+	dateLine := lipgloss.JoinHorizontal(lipgloss.Left,
+		labelStyle.Render("Period:"),
+		"  ",
+		valueStyle.Render(exp.StartDate+" → "+exp.EndDate))
+
+	sections = append(sections, orgLine)
+	sections = append(sections, locationLine)
+	sections = append(sections, dateLine)
+	sections = append(sections, "")
+
+	// Quest Log (Description) with better styling
 	if len(exp.Description) > 0 {
-		descStyle := lipgloss.NewStyle().
-			Foreground(m.theme.Primary).
-			Bold(true)
-		details.WriteString(descStyle.Render("Description:") + "\n")
+		divider := lipgloss.NewStyle().
+			Foreground(m.theme.Accent).
+			Bold(true).
+			Render("━━━ QUEST LOG ━━━")
+
+		sections = append(sections, divider)
 
 		for _, desc := range exp.Description {
-			bullet := lipgloss.NewStyle().
-				Foreground(m.theme.Accent).
-				Render("  • ")
-			details.WriteString(bullet + desc + "\n")
+			// Add spacing to align with the values above (10 char label + 2 spaces)
+			indent := strings.Repeat(" ", 12)
+			descText := lipgloss.NewStyle().Foreground(m.theme.Primary).Render(desc)
+			sections = append(sections, indent+descText)
 		}
-		details.WriteString("\n")
+		sections = append(sections, "")
 	}
 
-	// Skills
+	// Skills Arsenal with enhanced badges
 	if len(exp.Skills) > 0 {
-		skillStyle := lipgloss.NewStyle().
+		divider := lipgloss.NewStyle().
 			Foreground(m.theme.Accent).
-			Background(lipgloss.Color("#1a1a1a")).
+			Bold(true).
+			Render("━━━ SKILLS ━━━")
+
+		sections = append(sections, divider)
+
+		skillStyle := lipgloss.NewStyle().
+			Foreground(m.theme.Background).
+			Background(m.theme.Accent).
 			Padding(0, 1).
-			MarginRight(1)
+			MarginRight(1).
+			Bold(true)
 
 		var skillBadges []string
 		for _, skill := range exp.Skills {
 			skillBadges = append(skillBadges, skillStyle.Render(skill))
 		}
-
-		skillsTitle := lipgloss.NewStyle().
-			Foreground(m.theme.Primary).
-			Bold(true).
-			Render("Skills:")
-
-		details.WriteString(skillsTitle + "\n")
-		details.WriteString(strings.Join(skillBadges, " ") + "\n")
+		sections = append(sections, strings.Join(skillBadges, " "))
 	}
+
+	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
 
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Center,
-		components.SectionBox("Detailed View", details.String(), m.theme, m.width-8),
+		components.SectionBox("", content, m.theme, m.width-8),
 	)
 }
