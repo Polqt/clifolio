@@ -201,7 +201,7 @@ func (m *menuModel) View() string {
 	}
 
 	list := components.RenderList(m.choices, m.cursor, m.theme, listStyle)
-	listBox := components.SectionBox("⚔️  Available Commands", list, m.theme, m.width-8)
+	listBox := components.SectionBox("", list, m.theme, m.width-8)
 	sections = append(sections, lipgloss.PlaceHorizontal(m.width, lipgloss.Center, listBox))
 
 	// Show current selection info
