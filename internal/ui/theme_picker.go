@@ -58,6 +58,18 @@ func NewThemePickerModel(theme styles.Theme) *themePickerModel {
 			Icon:        "🧛",
 			Description: "Dark with vibrant accents - Modern & Stylish",
 			Preview:     "Purple & Pink",
+		}, {
+			Name:        "space",
+			DisplayName: "Space Odyssey",
+			Icon:        "🌌",
+			Description: "Deep space with nebula accents - Cosmic & Mystical",
+			Preview:     "Purple & Blue",
+		}, {
+			Name:        "digimon",
+			DisplayName: "Digimon",
+			Icon:        "🦖",
+			Description: "Bright and colorful - Adventure awaits",
+			Preview:     "Vibrant & Fun",
 		},
 	}
 

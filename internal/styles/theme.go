@@ -42,15 +42,34 @@ func NewThemeFromName(name string) Theme {
 			Help:       lipgloss.Color("#626262"),
 			Error:      lipgloss.Color("#FF0000"),
 		}
+	case "space":
+		return Theme{
+            Background: lipgloss.Color("#0a0e27"), 
+        	Primary:    lipgloss.Color("#ffffff"),
+        	Secondary:  lipgloss.Color("#7c8fb5"), 
+        	Accent:     lipgloss.Color("#9d7cff"),
+        	Help:       lipgloss.Color("#4a5568"),
+        	Error:      lipgloss.Color("#ff6b9d"), 
+    	}
+	case "digimon": 
+		return Theme{
+			Background: lipgloss.Color("#0a0e27"),  
+			Primary:    lipgloss.Color("#ffffff"),  
+			Secondary:  lipgloss.Color("#7c8fb5"),  
+			Accent:     lipgloss.Color("#9d7cff"),  
+			Help:       lipgloss.Color("#4a5568"),  
+			Error:      lipgloss.Color("#ff5c5c"),  
+
+		}
 	default:
 		// Default is now warrior theme
 		return Theme{
 			Background: lipgloss.Color("#0f0f0f"),
-			Primary:    lipgloss.Color("#dc322f"), // Blood red for titles
-			Secondary:  lipgloss.Color("#93a1a1"), // Steel gray for secondary text
-			Accent:     lipgloss.Color("#2aa198"), // Cyan for stats/skills
-			Help:       lipgloss.Color("#586e75"), // Muted gray for help
-			Error:      lipgloss.Color("#b58900"), // Yellow for warnings
+			Primary:    lipgloss.Color("#dc322f"), 
+			Secondary:  lipgloss.Color("#93a1a1"), 
+			Accent:     lipgloss.Color("#2aa198"),
+			Help:       lipgloss.Color("#586e75"),
+			Error:      lipgloss.Color("#b58900"), 
 		}
 	}
 }
