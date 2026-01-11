@@ -3,7 +3,6 @@ package ui
 import (
 	"clifolio/internal/styles"
 	"clifolio/internal/ui/components"
-	"clifolio/internal/ui/state"
 	"fmt"
 
 	"github.com/atotto/clipboard"
@@ -40,25 +39,21 @@ func NewContactModel(theme styles.Theme) *contactModel {
 			Label: "LinkedIn",
 			Value: "https://www.linkedin.com/in/janpol-hidalgo",
 			Icon:  "💼",
-			Link:  "https://www.linkedin.com/in/janpol-hidalgo-64174a241/",
 		},
 		{
 			Label: "GitHub",
 			Value: "github.com/Polqt",
 			Icon:  "🐙",
-			Link:  "github.com/Polqt",
 		},
 		{
 			Label: "Email",
 			Value: "poyhidalgo@gmail.com",
 			Icon:  "📧",
-			Link:  "mailto:poyhidalgo@gmail.com",
 		},
 		{
 			Label: "Portfolio",
 			Value: "https://yojepoy.vercel.app/",
 			Icon:  "🌐",
-			Link:  "https://yojepoy.vercel.app/",
 		},
 	}
 
@@ -87,11 +82,15 @@ func (m *contactModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case m.keymap.Up, "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
+			} else {
+				m.cursor = len(m.contacts) - 1
 			}
 			m.copiedMsg = ""
 		case m.keymap.Down, "down", "j":
 			if m.cursor < len(m.contacts)-1 {
 				m.cursor++
+			} else {
+				m.cursor = 0
 			}
 			m.copiedMsg = ""
 		case "c":
@@ -104,10 +103,6 @@ func (m *contactModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.copiedMsg = "Failed to copy to clipboard."
 				}
 			}
-		case "q":
-			m.showQR = !m.showQR
-		case m.keymap.Back, "esc":
-			return m, func() tea.Msg { return state.ScreenMenu }
 		}
 	}
 	return m, nil
@@ -120,7 +115,7 @@ func (m *contactModel) View() string {
 
 	var sections []string
 
-	header := components.HeaderBox("GET IN TOUCH", m.theme, m.width-4)
+	header := components.HeaderBox("SUMMON THE DEV-WARRIOR", m.theme, m.width-4)
 	sections = append(sections, header)
 
 	intro := lipgloss.NewStyle().
@@ -128,11 +123,11 @@ func (m *contactModel) View() string {
 		Italic(true).
 		Align(lipgloss.Center).
 		Width(m.width).
-		Render("I'm always open to new opportunities and collaborations!")
+		Render("The warrior awaits your summons for new quests and alliances!")
 
 	sections = append(sections, intro)
 
-	sections = append(sections, components.DividerLine(m.theme, m.width-4, "─"))
+	sections = append(sections, components.DividerLine(m.theme, m.width-2, "─"))
 
 	contactList := m.renderContactList()
 	sections = append(sections, contactList)
@@ -147,19 +142,10 @@ func (m *contactModel) View() string {
 		sections = append(sections, msgStyle.Render(m.copiedMsg))
 	}
 
-	if m.showQR {
-		qrCode := m.renderQRCode()
-		sections = append(sections, qrCode)
-	}
-
-	socialCards := m.renderSocialCards()
-	sections = append(sections, socialCards)
-
 	keyBindings := []components.KeyBind{
 		{Key: "↑↓/k/j", Desc: "Navigate"},
-		{Key: "c", Desc: "Copy"},
-		{Key: "q", Desc: "QR Code"},
-		{Key: "b/Esc", Desc: "Back"},
+		{Key: "c", Desc: "Copy to Clipboard"},
+		{Key: "b/Esc", Desc: "Retreat"},
 	}
 
 	footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
@@ -177,96 +163,60 @@ func (m *contactModel) View() string {
 }
 
 func (m *contactModel) renderContactList() string {
-	items := make([]components.ListItem, len(m.contacts))
+	var cards []string
 
 	for i, contact := range m.contacts {
-		desc := contact.Value
-		if contact.Link != "" {
-			desc += "\n🔗" + contact.Link
+		isSelected := i == m.cursor
+
+		// Label with better styling
+		labelStyle := lipgloss.NewStyle().
+			Foreground(m.theme.Accent).
+			Bold(true).
+			Underline(isSelected)
+
+		// Value with subtle styling
+		valueStyle := lipgloss.NewStyle().
+			Foreground(m.theme.Primary).
+			Italic(true)
+
+		// Build the contact content
+		contactContent := lipgloss.JoinVertical(
+			lipgloss.Left,
+			labelStyle.Render(contact.Label),
+			valueStyle.Render(contact.Value),
+		)
+
+		// Card styling
+		var card string
+		if isSelected {
+			cardStyle := lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(m.theme.Accent).
+				Padding(1, 3).
+				MarginBottom(1).
+				Width(m.width - 16).
+				BorderStyle(lipgloss.ThickBorder())
+
+			card = cardStyle.Render(contactContent)
+		} else {
+			cardStyle := lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(m.theme.Secondary).
+				Padding(1, 3).
+				MarginBottom(1).
+				Width(m.width - 16)
+
+			card = cardStyle.Render(contactContent)
 		}
 
-		items[i] = components.ListItem{
-			Title:   contact.Label,
-			Content: desc,
-			Icon:    contact.Icon,
-			Badge:   "Copy",
-		}
+		cards = append(cards, card)
 	}
 
-	listStyle := components.ListStyle{
-		ShowNumbers:    false,
-		ShowIcons:      true,
-		ShowBadges:     true,
-		CompactMode:    false,
-		HighlightColor: m.theme.Accent.(lipgloss.Color),
-	}
-
-	list := components.RenderList(items, m.cursor, m.theme, listStyle)
-	return components.SectionBox("Contact Information", list, m.theme, m.width-8)
-}
-
-func (m *contactModel) renderSocialCards() string {
-	cardWidth := (m.width - 12) / 2
-
-	githubCard := m.createSocialCard("GitHub", "🐙", "@Polqt", "30+ repos", cardWidth, 0)
-	linkedinCard := m.createSocialCard("LinkedIn", "💼", "Janpol Hidalgo", "500+ connections", cardWidth, 1)
-	portfolioCard := m.createSocialCard("Portfolio", "🌐", "yojepoy.vercel.app", "Check out my work", cardWidth, 2)
-
-	cards := lipgloss.JoinHorizontal(
-		lipgloss.Top,
-		githubCard,
-		"  ",
-		linkedinCard,
-		"  ",
-		portfolioCard,
-	)
-
-	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, cards)
-}
-
-func (m *contactModel) createSocialCard(title, icon, handle, meta string, width, index int) string {
-	isSelected := m.cursor == index
-
-	titleStyle := lipgloss.NewStyle().
-		Foreground(m.theme.Primary).
-		Bold(true).
-		Align(lipgloss.Center)
-
-	iconStyle := lipgloss.NewStyle().
-		Align(lipgloss.Center)
-
-	handleStyle := lipgloss.NewStyle().
-		Foreground(m.theme.Accent).
-		Align(lipgloss.Center)
-
-	metaStyle := lipgloss.NewStyle().
-		Foreground(m.theme.Secondary).
-		Italic(true).
-		Align(lipgloss.Center)
-
-	content := lipgloss.JoinVertical(
-		lipgloss.Center,
-		iconStyle.Render(icon),
-		titleStyle.Render(title),
-		handleStyle.Render(handle),
-		metaStyle.Render(meta),
-	)
-
-	return components.CardBox(content, m.theme, isSelected)
-}
-
-func (m *contactModel) renderQRCode() string {
-	qrPlaceHolder := lipgloss.NewStyle().
-		Foreground(m.theme.Secondary).
-		Border(lipgloss.RoundedBorder()).
-		Padding(2).
-		BorderForeground(m.theme.Primary).
-		Align(lipgloss.Center).
-		Render("QR Code would appear here\n.")
+	allCards := lipgloss.JoinVertical(lipgloss.Left, cards...)
 
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Center,
-		components.SectionBox("Scan to Connect", qrPlaceHolder, m.theme, m.width-8),
+		allCards,
 	)
 }
