@@ -3,6 +3,7 @@ package ui
 import (
 	"clifolio/internal/styles"
 	"clifolio/internal/ui/components"
+	"clifolio/internal/ui/state"
 	"fmt"
 
 	"github.com/atotto/clipboard"
@@ -103,6 +104,8 @@ func (m *contactModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.copiedMsg = "Failed to copy to clipboard."
 				}
 			}
+		case m.keymap.Back, "esc":
+			return m, func() tea.Msg { return state.ScreenMenu }
 		}
 	}
 	return m, nil
