@@ -34,46 +34,46 @@ func NewMenuModel(theme styles.Theme) *menuModel {
 
 	choices := []components.ListItem{
 		{
-			Title:   "Projects",
-			Content: "Browse my GitHub repositories",
-			Icon:    "📦",
+			Title:   "Battle Records",
+			Content: "Chronicles of completed quests",
+			Icon:    "⚡",
 			Badge:   "GitHub",
 		},
 		{
-			Title:   "Skills",
-			Content: "Technical skills and expertise",
-			Icon:    "⚡",
+			Title:   "Abilities",
+			Content: "Warrior's skills and mastery",
+			Icon:    "✨",
 			Badge:   "Tech Stack",
 		},
 		{
-			Title:   "Experience",
-			Content: "Professional work history",
-			Icon:    "💼",
+			Title:   "Combat History",
+			Content: "Journey through battles past",
+			Icon:    "📖",
 			Badge:   "Career",
 		},
 		{
-			Title:   "Contact",
-			Content: "Get in touch with me",
-			Icon:    "📧",
+			Title:   "Summon Warrior",
+			Content: "Reach out to the Dev-Warrior",
+			Icon:    "📜",
 			Badge:   "Social",
 		},
 		{
-			Title:   "GitHub Stats",
-			Content: "Live GitHub statistics",
+			Title:   "Warrior Stats",
+			Content: "Live battle statistics",
 			Icon:    "📊",
 			Badge:   "Analytics",
 		},
 		{
-			Title:   "Themes",
-			Content: "Change visual theme",
-			Icon:    "🎨",
+			Title:   "Change Realm",
+			Content: "Shift between realms",
+			Icon:    "🌙",
 			Badge:   "Customize",
 		},
 		{
-			Title:   "Matrix Mode",
-			Content: "Enter the Matrix...",
+			Title:   "Matrix Realm",
+			Content: "Enter the forbidden realm...",
 			Icon:    "🟢",
-			Badge:   "Easter Egg",
+			Badge:   "Secret",
 		},
 	}
 
@@ -163,7 +163,7 @@ func (m *menuModel) View() string {
 	var sections []string
 
 	// Header
-	header := components.HeaderBox("COMMAND PALETTE", m.theme, m.width-4)
+	header := components.HeaderBox("WARRIOR'S COMMAND REALM", m.theme, m.width-2)
 	sections = append(sections, header)
 
 	// Subtitle
@@ -172,7 +172,7 @@ func (m *menuModel) View() string {
 		Italic(true).
 		Align(lipgloss.Center).
 		Width(m.width).
-		Render("Navigate through my portfolio")
+		Render("Choose your path, Warrior")
 	sections = append(sections, subtitle)
 
 	// Divider
@@ -201,7 +201,7 @@ func (m *menuModel) View() string {
 	}
 
 	list := components.RenderList(m.choices, m.cursor, m.theme, listStyle)
-	listBox := components.SectionBox("Available Commands", list, m.theme, m.width-8)
+	listBox := components.SectionBox("⚔️  Available Commands", list, m.theme, m.width-8)
 	sections = append(sections, lipgloss.PlaceHorizontal(m.width, lipgloss.Center, listBox))
 
 	// Show current selection info
@@ -211,15 +211,15 @@ func (m *menuModel) View() string {
 			Italic(true).
 			Align(lipgloss.Center).
 			Width(m.width).
-			Render("Press Enter to open " + m.choices[m.cursor].Title)
+			Render("⚡ Press Enter to embark on: " + m.choices[m.cursor].Title)
 		sections = append(sections, "\n"+selectedInfo)
 	}
 
 	keyBindings := []components.KeyBind{
-		{Key: "↑↓", Desc: "Navigate"},
+		{Key: "↑↓/j/k", Desc: "Navigate"},
 		{Key: "Enter", Desc: "Select"},
 		{Key: "/", Desc: "Search"},
-		{Key: "q", Desc: "Quit"},
+		{Key: "q", Desc: "Retreat"},
 	}
 
 	footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)

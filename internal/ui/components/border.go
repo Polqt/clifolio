@@ -138,20 +138,20 @@ func HeaderBox(title string, theme styles.Theme, width int) string {
 		Foreground(theme.Accent).
 		Bold(true)
 
-	// Scroll-like decorative top border
+	// Scroll-like decorative top border - full width
 	topBorder := borderStyle.Render("┌" + strings.Repeat("═", width-2) + "┐")
 
 	// Title line with scroll decorations
 	swordDecor := "⚔️"
-	titleText := "  " + title + "  "
+	titleText := "  " + title + " "
 
 	// Calculate visual width using runewidth to account for emojis
-	swordWidth := runewidth.StringWidth(swordDecor) 
+	swordWidth := runewidth.StringWidth(swordDecor)
 	titleTextWidth := runewidth.StringWidth(titleText)
 	titleVisualWidth := swordWidth + titleTextWidth + swordWidth
 	contentWidth := width - 2 // Subtract borders
 
-	// Calculate padding
+	// Calculate padding to fill the entire width
 	padding := contentWidth - titleVisualWidth
 	if padding < 0 {
 		padding = 0
@@ -159,11 +159,20 @@ func HeaderBox(title string, theme styles.Theme, width int) string {
 	leftPad := padding / 2
 	rightPad := padding - leftPad
 
-	// Build the title line
+	// Build the title line with symmetric padding
 	titleLine := strings.Repeat(" ", leftPad) + swordDecor + titleText + swordDecor + strings.Repeat(" ", rightPad)
+
+	titleLineWidth := runewidth.StringWidth(titleLine)
+	if titleLineWidth < contentWidth {
+		extraSpace := contentWidth - titleLineWidth
+		extraLeft := extraSpace / 2
+		extraRight := extraSpace - extraLeft
+		titleLine = strings.Repeat(" ", extraLeft) + titleLine + strings.Repeat(" ", extraRight)
+	}
+
 	middleLine := borderStyle.Render("│") + titleStyle.Render(titleLine) + borderStyle.Render("│")
 
-	// Scroll-like decorative bottom border
+	// Scroll-like decorative bottom border - full width
 	bottomBorder := borderStyle.Render("└" + strings.Repeat("═", width-2) + "┘")
 
 	return lipgloss.JoinVertical(

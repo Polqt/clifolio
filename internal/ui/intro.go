@@ -17,6 +17,7 @@ type goToMenuMsg struct{}
 
 type introModel struct {
 	fullRunes []rune
+	fullText  string
 	pos       int
 	lines     []string
 	done      bool
@@ -25,6 +26,7 @@ type introModel struct {
 	theme     styles.Theme
 	width     int
 	height    int
+	maxLines  int
 }
 
 func IntroModel() introModel {
@@ -46,11 +48,16 @@ func IntroModel() introModel {
 
 	theme := styles.NewThemeFromName("default")
 
+	// Calculate total lines for fixed box size
+	maxLines := len(strings.Split(fullText, "\n"))
+
 	return introModel{
 		fullRunes: []rune(fullText),
+		fullText:  fullText,
 		lines:     []string{""},
 		ascii:     ascii,
 		theme:     theme,
+		maxLines:  maxLines,
 	}
 }
 
@@ -108,7 +115,7 @@ func (m introModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Skip animation or go to menu
 		if !m.done {
 			// Complete the animation instantly
-			m.lines = []string{string(m.fullRunes)}
+			m.lines = strings.Split(m.fullText, "\n")
 			m.pos = len(m.fullRunes)
 			m.done = true
 			if len(m.ascii) > 0 {
@@ -131,13 +138,12 @@ func (m introModel) View() string {
 
 	var sections []string
 
-	// Header
-	header := components.HeaderBox("WARRIOR AWAKENS", m.theme, m.width-8)
-	sections = append(sections, "")
+	// Header - always at the top
+	header := components.HeaderBox("WARRIOR AWAKENS", m.theme, m.width-2)
 	sections = append(sections, header)
 	sections = append(sections, "")
 
-	// Animated intro text
+	// Animated intro text with fixed dimensions
 	introContent := m.renderIntroText()
 	sections = append(sections, introContent)
 
@@ -147,27 +153,14 @@ func (m introModel) View() string {
 		sections = append(sections, asciiArt)
 	}
 
-	// Prompt when done
-	if m.done {
-		sections = append(sections, "")
-		sections = append(sections, components.DividerLine(m.theme, m.width-8, "─"))
-		sections = append(sections, "")
-
-		prompt := lipgloss.NewStyle().
-			Foreground(m.theme.Accent).
-			Bold(true).
-			Align(lipgloss.Center).
-			Width(m.width - 8).
-			Render("⚡ Press any key to enter the realm ⚡")
-		sections = append(sections, lipgloss.PlaceHorizontal(m.width, lipgloss.Center, prompt))
-
-		keyBindings := []components.KeyBind{
-			{Key: "Any Key", Desc: "Begin Quest"},
-			{Key: "Ctrl+C", Desc: "Retreat"},
-		}
-		footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
-		sections = append(sections, footer)
+	// Footer key bindings - always visible
+	sections = append(sections, "")
+	keyBindings := []components.KeyBind{
+		{Key: "Any Key", Desc: "Begin Quest"},
+		{Key: "Ctrl+C", Desc: "Retreat"},
 	}
+	footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
+	sections = append(sections, footer)
 
 	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
 
@@ -184,9 +177,24 @@ func (m introModel) renderIntroText() string {
 	// Join all lines into a single text
 	text := strings.Join(m.lines, "\n")
 
+	// Pad with empty lines to maintain fixed height during animation
+	currentLines := len(m.lines)
+	if currentLines < m.maxLines {
+		for i := 0; i < m.maxLines-currentLines; i++ {
+			text += "\n"
+		}
+	}
+
+	// Set fixed width for the text content to prevent box resizing
+	contentWidth := m.width - 20 // Account for box borders and padding
+	if contentWidth < 40 {
+		contentWidth = 40
+	}
+
 	textStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Primary).
-		Align(lipgloss.Left)
+		Align(lipgloss.Left).
+		Width(contentWidth)
 
 	highlightStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Accent).
