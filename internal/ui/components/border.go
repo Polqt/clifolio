@@ -56,10 +56,6 @@ func GlowBorder(theme styles.Theme) lipgloss.Style {
 }
 
 func SectionBox(title, content string, theme styles.Theme, width int) string {
-	titleStyle := lipgloss.NewStyle().
-		Foreground(theme.Primary).
-		Bold(true)
-
 	// Scroll-like box with decorative borders
 	boxStyle := lipgloss.NewStyle().
 		Border(lipgloss.Border{
@@ -75,22 +71,7 @@ func SectionBox(title, content string, theme styles.Theme, width int) string {
 		BorderForeground(theme.Primary).
 		Padding(1, 2).
 		Width(width)
-	// Warrior-themed title bar with scroll decorations
-	var titleBar string
-	if title != "" {
-		titleText := "━━━► " + title + " ◄━━━"
-		titleBar = lipgloss.PlaceHorizontal(width, lipgloss.Center, titleStyle.Render(titleText))
-	} else {
-		titleBar = ""
-	}
 
-	if titleBar != "" {
-		return lipgloss.JoinVertical(
-			lipgloss.Left,
-			titleBar,
-			boxStyle.Render(content),
-		)
-	}
 	return boxStyle.Render(content)
 }
 

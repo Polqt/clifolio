@@ -35,7 +35,6 @@ func RenderKeyBindings(bindings []KeyBind, theme styles.Theme, width int) string
 	borderStyle := lipgloss.NewStyle().
 		Foreground(theme.Primary)
 
-	// Create a full-width line with centered COMMANDS text
 	commandLabel := " ⚔️  COMMANDS ⚔️  "
 	labelWidth := runewidth.StringWidth(commandLabel) // Calculate actual visual width
 	remainingWidth := width - labelWidth
