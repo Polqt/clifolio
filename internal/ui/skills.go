@@ -205,7 +205,7 @@ func (m *skillsModel) View() string {
 			Italic(true).
 			Align(lipgloss.Center).
 			Width(m.width).
-			Render(fmt.Sprintf("%s %s - %s", currentCat.Icon, currentCat.DisplayName, currentCat.Description))
+			Render(fmt.Sprintf("%s", currentCat.Description))
 		sections = append(sections, catInfo)
 	}
 
@@ -213,7 +213,6 @@ func (m *skillsModel) View() string {
 	stats := m.renderStatsOverview()
 	sections = append(sections, stats)
 
-	// Skills grid - all skills visible, no scrolling needed
 	skillsGrid := m.renderSkillsCompactGrid()
 	sections = append(sections, skillsGrid)
 
@@ -379,33 +378,50 @@ func (m *skillsModel) renderSkillsCompactGrid() string {
 }
 
 func (m *skillsModel) renderSkillCard(skill Skill, width int) string {
-	// Icon with larger size
-	iconStyle := lipgloss.NewStyle().
-		Foreground(skill.Color).
-		Bold(true).
-		Width(width).
-		Align(lipgloss.Center)
-
-	// Bigger title with more presence
-	titleStyle := lipgloss.NewStyle().
+	// Skill name
+	nameStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Primary).
 		Bold(true).
 		Width(width).
 		Align(lipgloss.Center)
 
-	// Simple card without borders
+	// Level bar - pixel warrior style
+	maxLevel := 5
+	filledBlocks := skill.Level
+	emptyBlocks := maxLevel - skill.Level
+
+	levelBar := ""
+	for i := 0; i < filledBlocks; i++ {
+		levelBar += "▓"
+	}
+	for i := 0; i < emptyBlocks; i++ {
+		levelBar += "░"
+	}
+
+	levelStyle := lipgloss.NewStyle().
+		Foreground(skill.Color).
+		Width(width).
+		Align(lipgloss.Center)
+
+	// Years indicator
+	yearsStyle := lipgloss.NewStyle().
+		Foreground(m.theme.Secondary).
+		Width(width).
+		Align(lipgloss.Center)
+
+	// Build card content
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
-		iconStyle.Render(skill.Icon),
-		"", // Empty line for spacing
-		titleStyle.Render(skill.Name),
+		nameStyle.Render(skill.Name),
+		levelStyle.Render(levelBar),
+		yearsStyle.Render(fmt.Sprintf("%dyr", skill.Years)),
 	)
 
 	cardStyle := lipgloss.NewStyle().
 		Width(width).
-		Height(6).
+		Height(5).
 		Margin(0, 1, 1, 0).
-		Padding(1)
+		Padding(0, 1)
 
 	return cardStyle.Render(content)
 }

@@ -204,17 +204,6 @@ func (m *menuModel) View() string {
 	listBox := components.SectionBox("", list, m.theme, m.width-8)
 	sections = append(sections, lipgloss.PlaceHorizontal(m.width, lipgloss.Center, listBox))
 
-	// Show current selection info
-	if m.cursor < len(m.choices) {
-		selectedInfo := lipgloss.NewStyle().
-			Foreground(m.theme.Secondary).
-			Italic(true).
-			Align(lipgloss.Center).
-			Width(m.width).
-			Render("⚡ Press Enter to embark on: " + m.choices[m.cursor].Title)
-		sections = append(sections, "\n"+selectedInfo)
-	}
-
 	keyBindings := []components.KeyBind{
 		{Key: "↑↓/j/k", Desc: "Navigate"},
 		{Key: "Enter", Desc: "Select"},
