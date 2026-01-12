@@ -5,7 +5,6 @@ import (
 	"clifolio/internal/ui/components"
 	"clifolio/internal/ui/state"
 	"fmt"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -13,7 +12,7 @@ import (
 
 type Skill struct {
 	Name     string
-	Level    int // 1-5
+	Level    int
 	Category string
 	Years    int
 	Icon     string
@@ -43,82 +42,77 @@ func NewSkillsModel(theme styles.Theme) *skillsModel {
 	categories := []CategoryInfo{
 		{
 			ID:          "frontend",
-			DisplayName: "Frontend",
+			DisplayName: "UI Mastery",
 			Icon:        "🎨",
-			Description: "UI/UX & client-side development",
+			Description: "Visual combat & interface arts",
 		},
 		{
 			ID:          "backend",
-			DisplayName: "Backend",
+			DisplayName: "Server Arts",
 			Icon:        "⚙",
-			Description: "Server-side & APIs",
+			Description: "Backend sorcery & API crafting",
 		},
 		{
 			ID:          "mobile",
-			DisplayName: "Mobile",
+			DisplayName: "Mobile Tactics",
 			Icon:        "📱",
-			Description: "Mobile app development",
+			Description: "Portable realm creation",
 		},
 		{
 			ID:          "devops",
-			DisplayName: "DevOps",
+			DisplayName: "War Engineering",
 			Icon:        "🐳",
-			Description: "Infrastructure & deployment",
+			Description: "Infrastructure & deployment tactics",
 		},
 		{
 			ID:          "database",
-			DisplayName: "Database",
+			DisplayName: "Data Vaults",
 			Icon:        "🗄",
-			Description: "Data storage & management",
+			Description: "Knowledge storage mastery",
 		},
 		{
 			ID:          "languages",
-			DisplayName: "Languages",
+			DisplayName: "Code Tongues",
 			Icon:        "💻",
-			Description: "Programming languages",
+			Description: "Ancient programming languages",
 		},
 	}
 
 	skills := []Skill{
 		// Frontend
 		{Name: "React", Level: 5, Category: "frontend", Years: 3, Icon: "⚡", Projects: 20, Color: lipgloss.Color("#61DAFB")},
-		{Name: "TypeScript", Level: 4, Category: "frontend", Years: 3, Icon: "🔷", Projects: 25, Color: lipgloss.Color("#3178C6")},
-		{Name: "JavaScript", Level: 5, Category: "frontend", Years: 4, Icon: "💛", Projects: 30, Color: lipgloss.Color("#F7DF1E")},
+		{Name: "Vue", Level: 1, Category: "frontend", Years: 1, Icon: "⚡", Projects: 20, Color: lipgloss.Color("#61DAFB")},
 		{Name: "Next.js", Level: 4, Category: "frontend", Years: 2, Icon: "▲", Projects: 15, Color: lipgloss.Color("#FFFFFF")},
 		{Name: "TailwindCSS", Level: 5, Category: "frontend", Years: 2, Icon: "🎯", Projects: 18, Color: lipgloss.Color("#06B6D4")},
-		{Name: "HTML/CSS", Level: 5, Category: "frontend", Years: 4, Icon: "🌐", Projects: 35, Color: lipgloss.Color("#E34F26")},
-
 		// Backend
 		{Name: "Node.js", Level: 4, Category: "backend", Years: 3, Icon: "🟩", Projects: 18, Color: lipgloss.Color("#339933")},
-		{Name: "Go", Level: 4, Category: "backend", Years: 2, Icon: "🐹", Projects: 15, Color: lipgloss.Color("#00ADD8")},
-		{Name: "Python", Level: 3, Category: "backend", Years: 2, Icon: "🐍", Projects: 10, Color: lipgloss.Color("#3776AB")},
+		{Name: "Go", Level: 2, Category: "backend", Years: 1, Icon: "🐹", Projects: 15, Color: lipgloss.Color("#00ADD8")},
+		{Name: "Python", Level: 2, Category: "backend", Years: 2, Icon: "🐍", Projects: 10, Color: lipgloss.Color("#3776AB")},
 		{Name: "Express.js", Level: 4, Category: "backend", Years: 3, Icon: "🚂", Projects: 16, Color: lipgloss.Color("#FFFFFF")},
 		{Name: "REST APIs", Level: 5, Category: "backend", Years: 3, Icon: "🔌", Projects: 22, Color: lipgloss.Color("#00D9FF")},
 
 		// Mobile
-		{Name: "Flutter", Level: 4, Category: "mobile", Years: 2, Icon: "🎯", Projects: 8, Color: lipgloss.Color("#02569B")},
-		{Name: "Dart", Level: 4, Category: "mobile", Years: 2, Icon: "💙", Projects: 8, Color: lipgloss.Color("#0175C2")},
-		{Name: "React Native", Level: 3, Category: "mobile", Years: 1, Icon: "📱", Projects: 5, Color: lipgloss.Color("#61DAFB")},
+		{Name: "Flutter", Level: 2, Category: "mobile", Years: 1, Icon: "🎯", Projects: 8, Color: lipgloss.Color("#02569B")},
+		{Name: "Dart", Level: 2, Category: "mobile", Years: 1, Icon: "💙", Projects: 8, Color: lipgloss.Color("#0175C2")},
+		{Name: "React Native", Level: 2, Category: "mobile", Years: 1, Icon: "📱", Projects: 5, Color: lipgloss.Color("#61DAFB")},
 
 		// DevOps
-		{Name: "Docker", Level: 4, Category: "devops", Years: 2, Icon: "🐳", Projects: 12, Color: lipgloss.Color("#2496ED")},
-		{Name: "Git", Level: 5, Category: "devops", Years: 4, Icon: "🔧", Projects: 50, Color: lipgloss.Color("#F05032")},
+		{Name: "Docker", Level: 2, Category: "devops", Years: 1, Icon: "🐳", Projects: 12, Color: lipgloss.Color("#2496ED")},
+		{Name: "Git", Level: 4, Category: "devops", Years: 3, Icon: "🔧", Projects: 50, Color: lipgloss.Color("#F05032")},
 		{Name: "GitHub Actions", Level: 4, Category: "devops", Years: 2, Icon: "⚡", Projects: 10, Color: lipgloss.Color("#2088FF")},
-		{Name: "Linux", Level: 4, Category: "devops", Years: 3, Icon: "🐧", Projects: 20, Color: lipgloss.Color("#FCC624")},
-		{Name: "AWS", Level: 3, Category: "devops", Years: 1, Icon: "🌐", Projects: 6, Color: lipgloss.Color("#FF9900")},
+		{Name: "AWS", Level: 2, Category: "devops", Years: 1, Icon: "🌐", Projects: 6, Color: lipgloss.Color("#FF9900")},
 
 		// Database
 		{Name: "PostgreSQL", Level: 4, Category: "database", Years: 3, Icon: "🐘", Projects: 15, Color: lipgloss.Color("#336791")},
-		{Name: "MongoDB", Level: 4, Category: "database", Years: 2, Icon: "🍃", Projects: 12, Color: lipgloss.Color("#47A248")},
-		{Name: "Redis", Level: 3, Category: "database", Years: 1, Icon: "🔴", Projects: 5, Color: lipgloss.Color("#DC382D")},
+		{Name: "MongoDB", Level: 4, Category: "database", Years: 1, Icon: "🍃", Projects: 12, Color: lipgloss.Color("#47A248")},
+		{Name: "Redis", Level: 2, Category: "database", Years: 1, Icon: "🔴", Projects: 5, Color: lipgloss.Color("#DC382D")},
 		{Name: "MySQL", Level: 4, Category: "database", Years: 3, Icon: "🐬", Projects: 14, Color: lipgloss.Color("#4479A1")},
 
 		// Languages
 		{Name: "JavaScript", Level: 5, Category: "languages", Years: 4, Icon: "🟨", Projects: 30, Color: lipgloss.Color("#F7DF1E")},
 		{Name: "TypeScript", Level: 4, Category: "languages", Years: 3, Icon: "🔷", Projects: 25, Color: lipgloss.Color("#3178C6")},
-		{Name: "Go", Level: 4, Category: "languages", Years: 2, Icon: "🐹", Projects: 15, Color: lipgloss.Color("#00ADD8")},
+		{Name: "Go", Level: 2, Category: "languages", Years: 2, Icon: "🐹", Projects: 15, Color: lipgloss.Color("#00ADD8")},
 		{Name: "Python", Level: 3, Category: "languages", Years: 2, Icon: "🐍", Projects: 10, Color: lipgloss.Color("#3776AB")},
-		{Name: "Dart", Level: 4, Category: "languages", Years: 2, Icon: "💙", Projects: 8, Color: lipgloss.Color("#0175C2")},
 		{Name: "SQL", Level: 4, Category: "languages", Years: 3, Icon: "📊", Projects: 18, Color: lipgloss.Color("#CC2927")},
 	}
 
@@ -150,10 +144,10 @@ func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case m.keymap.Left, "h", "left":
+		case m.keymap.Left, "left":
 			m.cycleCategoryBackward()
 			m.cursor = 0
-		case m.keymap.Right, "l", "right":
+		case m.keymap.Right, "right":
 			m.cycleCategoryForward()
 			m.cursor = 0
 		case "1":
@@ -174,11 +168,11 @@ func (m *skillsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "6":
 			m.category = "languages"
 			m.cursor = 0
-		case m.keymap.Back, "esc", "b":
+		case m.keymap.Back, "esc":
 			return m, func() tea.Msg {
 				return state.ScreenMenu
 			}
-		case m.keymap.Quit, "ctrl+c", "q":
+		case m.keymap.Quit, "ctrl+c":
 			return m, tea.Quit
 		}
 	}
@@ -194,7 +188,7 @@ func (m *skillsModel) View() string {
 	var sections []string
 
 	// Header
-	header := components.HeaderBox("SKILLS & EXPERTISE", m.theme, m.width-4)
+	header := components.HeaderBox("WARRIOR'S ABILITIES", m.theme, m.width-4)
 	sections = append(sections, header)
 
 	// Category selector
@@ -225,10 +219,10 @@ func (m *skillsModel) View() string {
 
 	// Key bindings
 	keyBindings := []components.KeyBind{
-		{Key: "←→/h/l", Desc: "Switch Category"},
-		{Key: "1-6", Desc: "Quick Select"},
-		{Key: "b/Esc", Desc: "Back"},
-		{Key: "q", Desc: "Quit"},
+		{Key: "←→/h/l", Desc: "Switch Abilities"},
+		{Key: "1-6", Desc: "Quick Access"},
+		{Key: "b/Esc", Desc: "Retreat"},
+		{Key: "q", Desc: "Exit Realm"},
 	}
 	footer := components.RenderKeyBindings(keyBindings, m.theme, m.width)
 	sections = append(sections, footer)
@@ -249,17 +243,16 @@ func (m *skillsModel) renderCategorySelector() string {
 
 	activeStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Accent).
-		Background(lipgloss.Color("#1a1a1a")).
 		Bold(true).
 		Padding(0, 2).
-		Border(lipgloss.RoundedBorder()).
+		Border(lipgloss.NormalBorder()).
 		BorderForeground(m.theme.Accent)
 
 	inactiveStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Secondary).
 		Padding(0, 2).
-		Border(lipgloss.HiddenBorder()).
-		BorderForeground(m.theme.Secondary)
+		Border(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("transparent"))
 
 	for _, cat := range m.categories {
 		label := cat.Icon + " " + cat.DisplayName
@@ -300,28 +293,34 @@ func (m *skillsModel) renderStatsOverview() string {
 	}
 
 	stats := []string{
-		fmt.Sprintf("📊 %d Skills", totalSkills),
-		fmt.Sprintf("⭐ %.1f/5 Avg", avgLevel),
-		fmt.Sprintf("📦 %d Projects", totalProjects),
-		fmt.Sprintf("📅 %d+ Years", maxYears),
+		fmt.Sprintf("Skills: %d", totalSkills),
+		fmt.Sprintf("Mastery: %.1f/5", avgLevel),
+		fmt.Sprintf("Battles: %d", totalProjects),
+		fmt.Sprintf("Years: %d+", maxYears),
 	}
 
 	statStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Primary).
-		Background(lipgloss.Color("#1a1a1a")).
 		Bold(true).
-		Padding(0, 2).
-		Margin(0, 1)
+		Padding(0, 3)
 
 	var statBoxes []string
 	for _, stat := range stats {
 		statBoxes = append(statBoxes, statStyle.Render(stat))
 	}
 
+	statsRow := lipgloss.JoinHorizontal(lipgloss.Top, statBoxes...)
+
+	statsContainer := lipgloss.NewStyle().
+		Border(lipgloss.NormalBorder()).
+		BorderForeground(m.theme.Secondary).
+		Padding(0, 1).
+		Render(statsRow)
+
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Center,
-		lipgloss.JoinHorizontal(lipgloss.Top, statBoxes...),
+		statsContainer,
 	)
 }
 
@@ -375,7 +374,7 @@ func (m *skillsModel) renderSkillsCompactGrid() string {
 	return lipgloss.PlaceHorizontal(
 		m.width,
 		lipgloss.Center,
-		components.SectionBox("Skills", grid, m.theme, m.width-8),
+		components.SectionBox("⚡ Abilities Acquired", grid, m.theme, m.width-8),
 	)
 }
 
@@ -384,17 +383,17 @@ func (m *skillsModel) renderSkillCard(skill Skill, width int) string {
 	iconStyle := lipgloss.NewStyle().
 		Foreground(skill.Color).
 		Bold(true).
-		Width(width - 4).
+		Width(width).
 		Align(lipgloss.Center)
 
 	// Bigger title with more presence
 	titleStyle := lipgloss.NewStyle().
 		Foreground(m.theme.Primary).
 		Bold(true).
-		Width(width - 4).
+		Width(width).
 		Align(lipgloss.Center)
 
-	// Add spacing for better fill
+	// Simple card without borders
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
 		iconStyle.Render(skill.Icon),
@@ -403,24 +402,12 @@ func (m *skillsModel) renderSkillCard(skill Skill, width int) string {
 	)
 
 	cardStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(m.theme.Secondary).
-		Padding(1).
 		Width(width).
-		Height(8). // Reduced height to fit more on screen
-		Margin(0, 1, 1, 0)
+		Height(6).
+		Margin(0, 1, 1, 0).
+		Padding(1)
 
 	return cardStyle.Render(content)
-}
-
-func (m *skillsModel) renderLevelBar(level int) string {
-	filled := strings.Repeat("█", level)
-	empty := strings.Repeat("░", 5-level)
-
-	filledStyle := lipgloss.NewStyle().Foreground(m.theme.Accent)
-	emptyStyle := lipgloss.NewStyle().Foreground(m.theme.Secondary)
-
-	return filledStyle.Render(filled) + emptyStyle.Render(empty)
 }
 
 func (m *skillsModel) getFilteredSkills() []Skill {
